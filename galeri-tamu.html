@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#F3DCD0" />
+  <meta name="robots" content="noindex" />
+  <title>Galeri Tamu · Ratna &amp; Nuryadi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@500&family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=Ms+Madi&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root { --pink: #F8D6DD; --pink-2: #FBE6EA; --berry: #C25A72; --berry-d: #A9475F; --cocoa: #5B3A33; --cocoa-2: #8A6B63;
+      --mint: #CFE8DA; --lilac: #E4DAF6;
+      --fd: "Fraunces", Georgia, serif; --fu: "Plus Jakarta Sans", system-ui, sans-serif; --fm: "DM Mono", ui-monospace, monospace; --fs: "Ms Madi", cursive; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-text-size-adjust: 100%; min-height: 100%;
+      background:
+        radial-gradient(70% 30% at 0% 0%, rgba(248,190,205,.75), transparent 70%),
+        radial-gradient(60% 25% at 100% 6%, rgba(247,234,176,.7), transparent 70%),
+        radial-gradient(70% 30% at 100% 100%, rgba(200,185,240,.55), transparent 70%),
+        radial-gradient(60% 30% at 0% 100%, rgba(185,215,245,.65), transparent 70%),
+        linear-gradient(160deg, #FDE7EC, #FFF5EC 40%, #F1EAFB 75%, #E4EFFB);
+      background-color: #FFF5EC; }
+    body { min-height: 100vh; min-height: 100dvh; font-family: var(--fu); color: var(--cocoa); -webkit-font-smoothing: antialiased; background: transparent; }
+    body::before { content: ""; position: fixed; inset: 0; pointer-events: none; opacity: .45; z-index: -1;
+      background-image: radial-gradient(rgba(194,90,114,.15) 1.2px, transparent 1.5px); background-size: 24px 24px; }
+    body.lb-open { overflow: hidden; }
+    header { position: relative; max-width: 980px; margin: 0 auto; padding: 26px 20px 6px; text-align: center; }
+    .heading { font-weight: 700; font-size: .7rem; letter-spacing: .3em; text-indent: .3em; color: var(--berry); }
+    h1 { margin-top: 6px; font-family: var(--fd); font-style: italic; font-weight: 400; font-size: clamp(2rem, 8.5vw, 2.8rem); line-height: 1.05; }
+    h1 .amp { font-family: var(--fs); font-style: normal; color: var(--berry); margin: 0 .12em; font-size: 1.1em; }
+    .date { margin-top: 4px; font-family: var(--fm); font-size: .82rem; letter-spacing: .2em; color: var(--cocoa-2); }
+    .sub { margin: 14px auto 0; max-width: 420px; font-size: .92rem; line-height: 1.5; color: var(--cocoa-2); }
+    .sub b { color: var(--cocoa); }
+    .hstk { position: absolute; width: 58px; pointer-events: none; filter: drop-shadow(0 6px 8px rgba(120,60,75,.18)); }
+    .hstk.a { left: max(6px, calc(50% - 200px)); top: 20px; transform: rotate(-14deg); }
+    .hstk.b { right: max(6px, calc(50% - 196px)); top: 34px; width: 48px; transform: rotate(12deg); }
+
+    .bar-top { position: sticky; top: 0; z-index: 20; padding: 10px 14px; padding-top: max(10px, env(safe-area-inset-top)); }
+    .bar-in { max-width: 980px; margin: 0 auto; display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 14px; border-radius: 999px;
+      background: rgba(255,255,255,.74); border: 1px solid rgba(255,255,255,.9); -webkit-backdrop-filter: blur(14px) saturate(1.3); backdrop-filter: blur(14px) saturate(1.3);
+      box-shadow: 0 12px 30px -18px rgba(120,60,75,.55); }
+    .quota { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: .9rem; white-space: nowrap; }
+    .quota .dots { display: flex; gap: 3px; }
+    .quota .dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--berry); }
+    .quota .dots i.off { background: rgba(194,90,114,.2); }
+    .quota b { color: var(--berry); font-family: var(--fm); font-size: 1rem; }
+    .quota.empty b { color: #9a7a74; }
+    .count { margin-left: auto; font-size: .8rem; font-weight: 600; color: var(--cocoa-2); white-space: nowrap; }
+    .btn-sel { flex: none; min-height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid rgba(194,90,114,.25); background: var(--pink-2); color: var(--berry-d);
+      font: 800 .85rem var(--fu); letter-spacing: .04em; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    body.selecting .btn-sel { background: var(--cocoa); color: #fff; border-color: var(--cocoa); }
+    @media (max-width: 380px) { .quota .dots { display: none; } .count { display: none; } .btn-sel { margin-left: auto; } }
+
+    .note { max-width: 980px; margin: 4px auto 0; padding: 0 16px; }
+    .note div { padding: 12px 16px; border-radius: 18px; background: rgba(255,255,255,.72); border: 1px solid #fff; font-size: .88rem; line-height: 1.45; color: var(--cocoa-2);
+      box-shadow: 0 10px 24px -18px rgba(120,60,75,.5); }
+    .note b { color: var(--cocoa); }
+
+    main { max-width: 980px; margin: 0 auto; padding: 14px 14px 140px; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 14px; }
+    @media (min-width: 600px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px 20px; } }
+    @media (min-width: 900px) { .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+    .tile { position: relative; display: block; width: 100%; padding: 7px 7px 26px; border: 0; border-radius: 12px; background: #fff; cursor: pointer; text-align: center;
+      color: var(--cocoa); font: inherit; -webkit-tap-highlight-color: transparent; transform: rotate(var(--r, 0deg));
+      box-shadow: 0 16px 30px -20px rgba(90,40,55,.55), 0 4px 10px -6px rgba(90,40,55,.2); transition: transform .25s cubic-bezier(.3,1.4,.5,1), box-shadow .25s; }
+    .tile:nth-child(3n+1) { --r: -1.2deg; } .tile:nth-child(3n+2) { --r: .9deg; } .tile:nth-child(3n) { --r: -.4deg; }
+    .tile:active { transform: rotate(var(--r)) scale(.97); }
+    .tile .ph { aspect-ratio: 2 / 3; border-radius: 7px; overflow: hidden; background: var(--pink-2); }
+    .tile img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0; transition: opacity .35s; }
+    .tile img.ld { opacity: 1; }
+    img { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; -webkit-user-drag: none; }
+    .tile .t { position: absolute; left: 0; right: 0; bottom: 5px; font-family: var(--fd); font-style: italic; font-size: .86rem; color: var(--cocoa-2); }
+    .tile .ck { position: absolute; top: 14px; right: 14px; width: 30px; height: 30px; border-radius: 50%; display: none; place-items: center;
+      background: rgba(255,255,255,.85); border: 2px solid #fff; box-shadow: 0 3px 10px rgba(60,20,30,.3); color: transparent; font-weight: 800; font-size: 1rem; }
+    body.selecting .tile .ck { display: grid; }
+    .tile.sel .ck { background: var(--berry); color: #fff; }
+    .tile.sel { box-shadow: 0 0 0 3px var(--berry), 0 16px 30px -18px rgba(194,90,114,.7); }
+    .tile .got { position: absolute; top: 14px; left: 14px; padding: 4px 9px; border-radius: 999px; background: rgba(207,232,218,.95); color: #2F5D46;
+      font-size: .68rem; font-weight: 800; letter-spacing: .03em; box-shadow: 0 3px 8px rgba(40,70,55,.2); }
+    .tile.new { animation: pop .7s cubic-bezier(.3,1.5,.5,1) both; }
+    .tile.hl { animation: hl 1.4s ease-in-out 3; }
+    @keyframes pop { from { transform: scale(.6) rotate(-8deg); opacity: 0; } to { transform: rotate(var(--r)); opacity: 1; } }
+    @keyframes hl { 50% { box-shadow: 0 0 0 6px rgba(194,90,114,.55), 0 20px 40px -18px rgba(194,90,114,.8); transform: rotate(var(--r)) scale(1.03); } }
+
+    .state { text-align: center; padding: 48px 20px; color: var(--cocoa-2); }
+    .state .emo { font-size: 2.6rem; }
+    .state h2 { margin-top: 8px; font-family: var(--fd); font-style: italic; font-weight: 500; font-size: 1.5rem; color: var(--cocoa); }
+    .state p { margin-top: 6px; line-height: 1.5; }
+    .spin { width: 40px; height: 40px; margin: 0 auto; border-radius: 50%; border: 4px solid rgba(194,90,114,.2); border-top-color: var(--berry); animation: sp 1s linear infinite; }
+    @keyframes sp { to { transform: rotate(360deg); } }
+
+    .foot { margin-top: 34px; text-align: center; }
+    .foot a { display: inline-block; font-weight: 700; font-size: .9rem; color: var(--berry); text-decoration: none; background: var(--pink-2); border: 1px solid rgba(194,90,114,.18); border-radius: 999px; padding: 9px 16px; }
+    .tag { margin-top: 18px; font-weight: 800; color: var(--berry); }
+
+    .act { position: fixed; z-index: 30; left: 0; right: 0; bottom: 0; padding: 12px 14px; padding-bottom: max(14px, env(safe-area-inset-bottom));
+      transform: translateY(120%); transition: transform .35s cubic-bezier(.3,1.3,.5,1); }
+    body.selecting .act { transform: none; }
+    .act-in { max-width: 560px; margin: 0 auto; display: flex; align-items: center; gap: 8px; padding: 10px; border-radius: 26px;
+      background: rgba(255,255,255,.86); border: 1px solid #fff; -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); box-shadow: 0 20px 40px -18px rgba(90,40,55,.55); }
+    .act-info { flex: 1; min-width: 0; padding-left: 6px; font-size: .78rem; font-weight: 600; color: var(--cocoa-2); line-height: 1.3; }
+    .act-info b { display: block; font-size: .95rem; color: var(--cocoa); }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 50px; padding: 0 18px; border-radius: 999px; border: 0; cursor: pointer;
+      font: 800 .95rem var(--fu); letter-spacing: .04em; -webkit-tap-highlight-color: transparent; white-space: nowrap; }
+    .btn svg { width: 20px; height: 20px; }
+    .btn-primary { color: #fff; background: linear-gradient(180deg, #D46C84, #BF566F); box-shadow: 0 12px 24px -12px rgba(194,90,114,.75); }
+    .btn-primary[disabled] { opacity: .45; box-shadow: none; }
+    .btn-soft { color: var(--cocoa); background: #fff; border: 1px solid rgba(91,58,51,.14); }
+    .btn-soft[disabled] { opacity: .5; }
+    .btn-round { width: 50px; padding: 0; }
+
+    .lb { position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 16px;
+      padding-top: max(16px, env(safe-area-inset-top)); padding-bottom: max(16px, env(safe-area-inset-bottom));
+      background: rgba(60,36,40,.55); -webkit-backdrop-filter: blur(18px) saturate(1.2); backdrop-filter: blur(18px) saturate(1.2); animation: fade .25s both; }
+    @keyframes fade { from { opacity: 0; } }
+    .lb-card { position: relative; background: #fff; padding: 10px 10px 40px; border-radius: 14px; transform: rotate(-1deg);
+      box-shadow: 0 30px 60px -20px rgba(20,8,12,.6); animation: lbin .45s cubic-bezier(.3,1.4,.5,1) both; }
+    .lb-card::before { content: ""; position: absolute; z-index: 2; top: -13px; left: 50%; width: 90px; height: 26px; transform: translateX(-50%) rotate(-3deg);
+      background: repeating-linear-gradient(-45deg, rgba(239,183,196,.92) 0 8px, rgba(255,255,255,.92) 8px 14px); border-radius: 3px; }
+    @keyframes lbin { from { transform: scale(.85) rotate(-5deg); opacity: 0; } }
+    .lb-card img { display: block; width: auto; height: auto; max-width: min(86vw, 520px); max-height: calc(100dvh - 250px); aspect-ratio: 2 / 3; object-fit: cover; border-radius: 8px; background: var(--pink-2); }
+    @supports not (height: 100dvh) { .lb-card img { max-height: calc(100vh - 250px); } }
+    .lb-cap { position: absolute; left: 0; right: 0; bottom: 10px; text-align: center; font-family: var(--fd); font-style: italic; font-size: 1rem; color: var(--cocoa-2); }
+    .lb-x { position: absolute; top: max(14px, env(safe-area-inset-top)); right: 14px; }
+    .lb-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,.85); }
+    .lb-nav.p { left: 10px; } .lb-nav.n { right: 10px; }
+    @media (max-width: 600px) { .lb-nav { display: none; } }
+    .lb-act { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; max-width: 520px; }
+    .lb-msg { min-height: 1.3em; font-size: .86rem; font-weight: 700; color: #fff; text-align: center; text-shadow: 0 1px 6px rgba(0,0,0,.35); }
+
+    .toast { position: fixed; z-index: 80; left: 50%; bottom: 104px; transform: translate(-50%, 30px); opacity: 0; pointer-events: none; width: max-content; max-width: calc(100vw - 32px);
+      padding: 12px 18px; border-radius: 18px; background: var(--cocoa); color: #fff; font-size: .9rem; font-weight: 600; line-height: 1.4; text-align: center;
+      box-shadow: 0 16px 34px -14px rgba(40,15,20,.6); transition: transform .3s cubic-bezier(.3,1.4,.5,1), opacity .25s; }
+    .toast.on { opacity: 1; transform: translate(-50%, 0); }
+    [hidden] { display: none !important; }
+  </style>
+  <link rel="stylesheet" href="jawa.css" />
+</head>
+<body>
+  <header>
+    <img class="hstk a" src="stickers/bow-pink.webp" alt="" aria-hidden="true" />
+    <img class="hstk b" src="stickers/strawberry.webp" alt="" aria-hidden="true" />
+    <div class="heading">GALERI TAMU</div>
+    <h1>Ratna<span class="amp">&amp;</span>Nuryadi</h1>
+    <div class="date">29 . 01 . 2027</div>
+    <p class="sub">Cari fotomu, ketuk <b>Pilih</b>, lalu <b>Download</b>. Tiap HP bisa mengunduh <b><span id="lim-text">8</span> foto</b> ya 💗</p>
+  </header>
+
+  <div class="bar-top">
+    <div class="bar-in">
+      <div class="quota" id="quota"><span class="dots" id="dots"></span><span>Sisa unduhan: <b id="left">8/8</b></span></div>
+      <span class="count" id="count"></span>
+      <button type="button" class="btn-sel" id="btn-sel">Pilih</button>
+    </div>
+  </div>
+  <div class="note" id="note-full" hidden><div><b>Jatah unduhan HP ini sudah habis (<span class="lim">8</span>/<span class="lim">8</span>) 🥺</b> Kamu tetap bisa melihat semua foto, dan foto yang sudah pernah kamu unduh masih bisa diunduh ulang.</div></div>
+
+  <main>
+    <div class="state" id="loading"><div class="spin"></div><p>Memuat foto…</p></div>
+    <div class="state" id="empty" hidden><div class="emo">📸</div><h2>Belum ada foto nih!</h2><p>Foto dari photobooth akan muncul di sini otomatis.</p></div>
+    <div class="state" id="error" hidden><div class="emo">🥲</div><h2>Tidak bisa terhubung</h2><p>Periksa koneksi internet lalu muat ulang halaman.</p></div>
+    <div class="grid" id="grid" aria-live="polite"></div>
+    <div class="foot">
+      <a href="./">📸 Ikut berfoto di photobooth</a>
+      <div class="tag">#MenujuRidhaRN</div>
+    </div>
+  </main>
+
+  <div class="act" id="act">
+    <div class="act-in">
+      <button type="button" class="btn btn-soft btn-round" id="btn-cancel" aria-label="Batal memilih">✕</button>
+      <div class="act-info"><b id="sel-n">0 foto dipilih</b><span id="sel-sub">ketuk foto untuk memilih</span></div>
+      <button type="button" class="btn btn-soft btn-round" id="btn-share" aria-label="Simpan ke galeri HP" title="Simpan ke galeri HP" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>
+      </button>
+      <button type="button" class="btn btn-primary" id="btn-dl" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>
+        <span id="dl-label">Download (0)</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="Lihat foto">
+    <button type="button" class="btn btn-soft btn-round lb-x" id="lb-x" aria-label="Tutup">✕</button>
+    <button type="button" class="btn btn-soft btn-round lb-nav p" id="lb-p" aria-label="Sebelumnya">‹</button>
+    <button type="button" class="btn btn-soft btn-round lb-nav n" id="lb-n" aria-label="Berikutnya">›</button>
+    <div class="lb-card"><img id="lb-img" alt="Foto photobooth" /><div class="lb-cap" id="lb-cap"></div></div>
+    <div class="lb-act">
+      <button type="button" class="btn btn-primary" id="lb-dl">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>
+        <span id="lb-dl-label">Download foto ini</span>
+      </button>
+      <button type="button" class="btn btn-soft" id="lb-sel">Pilih ✓</button>
+    </div>
+    <div class="lb-msg" id="lb-msg" role="status"></div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+  (function () {
+    "use strict";
+    const CONFIG = { supabaseUrl: "", supabaseAnonKey: "sb_publishable_5U20TOgS5LZewLIhR-Mi5g_N-PVHpxi", table: "photos" };
+    const LIMIT = 8;                       // jatah unduhan per HP (unik per foto)
+    const LS_DL = "photobooth-rnjawa-galeri-dl-v1";
+    const CK_DL = "pb_rn_gdl";
+    const POLL_MS = 20000;
+    const $ = (id) => document.getElementById(id);
+    const q = new URLSearchParams(location.search);
+
+    /* ---------- kode foto (base64url dari UUID) ---------- */
+    function codeToId(c) {
+      try {
+        const b = atob(c.replace(/-/g, "+").replace(/_/g, "/") + "==".slice(0, (4 - c.length % 4) % 4));
+        if (b.length !== 16) return null;
+        const h = [...b].map((ch) => ch.charCodeAt(0).toString(16).padStart(2, "0")).join("");
+        return h.slice(0, 8) + "-" + h.slice(8, 12) + "-" + h.slice(12, 16) + "-" + h.slice(16, 20) + "-" + h.slice(20);
+      } catch (e) { return null; }
+    }
+    let targetId = q.get("id") || (q.get("f") ? codeToId(q.get("f")) : null);
+
+    /* ---------- jatah unduhan (localStorage + cookie cadangan) ---------- */
+    const downloaded = new Set();
+    function loadDownloaded() {
+      try { (JSON.parse(localStorage.getItem(LS_DL) || "[]") || []).forEach((id) => downloaded.add(String(id))); } catch (e) {}
+      try {
+        const m = document.cookie.match(/(?:^|; )pb_rn_gdl=([^;]*)/);
+        if (m) decodeURIComponent(m[1]).split(",").filter(Boolean).forEach((id) => downloaded.add(id));
+      } catch (e) {}
+    }
+    function saveDownloaded() {
+      const arr = [...downloaded];
+      try { localStorage.setItem(LS_DL, JSON.stringify(arr)); } catch (e) {}
+      try {
+        const exp = new Date(Date.now() + 120 * 864e5);
+        document.cookie = CK_DL + "=" + encodeURIComponent(arr.join(",")) + "; expires=" + exp.toUTCString() + "; path=/; SameSite=Lax";
+      } catch (e) {}
+    }
+    const remaining = () => Math.max(0, LIMIT - downloaded.size);
+    const isFree = (id) => downloaded.has(id);
+    const newSelected = () => [...selected].filter((id) => !isFree(id)).length;
+    function markDownloaded(id) {
+      if (downloaded.has(id)) return;
+      downloaded.add(id); saveDownloaded();
+      const t = tiles.get(id);
+      if (t) setGot(t.el, true);
+    }
+
+    /* ---------- state ---------- */
+    let client = null;
+    let photos = [];                 // urut terbaru dulu
+    const tiles = new Map();         // id -> { row, el }
+    const selected = new Set();
+    let selecting = false, lbId = null, loaded = false, busy = false;
+
+    const timeFmt = (ts) => { try { return new Date(ts).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Jakarta" }).replace(".", ":") + " WIB"; } catch (e) { return ""; } };
+    function fileName(row) {
+      let t = "";
+      try { t = new Date(row.created_at).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Jakarta" }).replace(/[^0-9]/g, ""); } catch (e) {}
+      return "Ratna-Nuryadi-photobooth" + (t ? "-" + t : "") + "-" + String(row.id).slice(0, 6) + ".jpg";
+    }
+
+    let toastT = 0;
+    function toast(text, ms) {
+      const el = $("toast"); el.textContent = text; el.classList.add("on");
+      clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove("on"), ms || 3200);
+    }
+
+    /* ---------- UI jatah & pilihan ---------- */
+    function renderQuota() {
+      const left = remaining();
+      $("left").textContent = left + "/" + LIMIT;
+      $("quota").classList.toggle("empty", left <= 0);
+      $("dots").innerHTML = Array.from({ length: LIMIT }, (_, i) => '<i class="' + (i < left ? "" : "off") + '"></i>').join("");
+      $("note-full").hidden = left > 0;
+      $("count").textContent = photos.length ? photos.length + " foto" : "";
+      document.querySelectorAll(".lim").forEach((e) => (e.textContent = LIMIT));
+      $("lim-text").textContent = LIMIT;
+      renderSel();
+      renderLb();
+    }
+    function renderSel() {
+      const n = selected.size, nn = newSelected();
+      $("sel-n").textContent = n + " foto dipilih";
+      $("sel-sub").textContent = n ? (nn ? "memakai " + nn + " dari sisa " + remaining() + " jatah" : "unduh ulang — tidak memakai jatah") : "ketuk foto untuk memilih";
+      $("dl-label").textContent = "Download (" + n + ")";
+      $("btn-dl").disabled = !n || busy;
+      $("btn-share").disabled = !n || busy;
+      tiles.forEach((t, id) => t.el.classList.toggle("sel", selected.has(id)));
+    }
+    function setSelecting(on) {
+      selecting = !!on;
+      document.body.classList.toggle("selecting", selecting);
+      $("btn-sel").textContent = selecting ? "Selesai" : "Pilih";
+      if (!selecting) selected.clear();
+      renderSel();
+    }
+    function limitMsg() {
+      return remaining() <= 0
+        ? "Jatah unduhan HP ini sudah habis (" + LIMIT + "/" + LIMIT + ") 🥺 Foto yang sudah pernah kamu unduh masih bisa diunduh ulang."
+        : "Sisa jatah unduhanmu tinggal " + remaining() + " foto ya 💗 Batalkan pilihan lain dulu kalau mau ganti.";
+    }
+    function trySelect(id, quiet) {
+      if (selected.has(id)) return true;
+      if (!isFree(id) && newSelected() >= remaining()) { if (!quiet) toast(limitMsg(), 4200); return false; }
+      selected.add(id); return true;
+    }
+    function toggleSelect(id) {
+      if (selected.has(id)) selected.delete(id);
+      else trySelect(id);
+      renderSel(); renderLb();
+    }
+
+    /* ---------- grid ---------- */
+    function setGot(el, on) {
+      let g = el.querySelector(".got");
+      if (on && !g) { g = document.createElement("span"); g.className = "got"; g.textContent = "✓ diunduh"; el.appendChild(g); }
+      if (!on && g) g.remove();
+    }
+    function makeTile(row, isNew) {
+      const el = document.createElement("button");
+      el.type = "button"; el.className = "tile" + (isNew ? " new" : ""); el.dataset.id = row.id;
+      el.setAttribute("aria-label", "Foto " + timeFmt(row.created_at));
+      const ph = document.createElement("div"); ph.className = "ph";
+      const img = document.createElement("img"); img.alt = ""; img.loading = "lazy"; img.decoding = "async";
+      img.onload = () => img.classList.add("ld");
+      img.src = row.public_url;
+      ph.appendChild(img); el.appendChild(ph);
+      const t = document.createElement("span"); t.className = "t"; t.textContent = timeFmt(row.created_at); el.appendChild(t);
+      const ck = document.createElement("span"); ck.className = "ck"; ck.textContent = "✓"; ck.setAttribute("aria-hidden", "true"); el.appendChild(ck);
+      if (isFree(row.id)) setGot(el, true);
+      el.addEventListener("click", () => { if (selecting) toggleSelect(row.id); else openLb(row.id); });
+      el.addEventListener("contextmenu", (e) => e.preventDefault());
+      return el;
+    }
+    function sortPhotos() { photos.sort((a, b) => String(b.created_at).localeCompare(String(a.created_at))); }
+    function addPhoto(row, isNew) {
+      if (!row || !row.id || !row.public_url) return;
+      const id = String(row.id);
+      row.id = id;
+      if (tiles.has(id)) return;
+      photos.push(row); sortPhotos();
+      const el = makeTile(row, isNew);
+      tiles.set(id, { row, el });
+      const idx = photos.indexOf(row), grid = $("grid");
+      const after = photos[idx + 1] && tiles.get(photos[idx + 1].id);
+      if (after) grid.insertBefore(el, after.el); else grid.appendChild(el);
+      $("empty").hidden = true;
+      if (targetId && id === targetId) focusTarget();
+    }
+    function removePhoto(id) {
+      id = String(id || "");
+      const t = tiles.get(id); if (!t) return;
+      t.el.remove(); tiles.delete(id);
+      photos = photos.filter((p) => p.id !== id);
+      selected.delete(id);
+      if (lbId === id) closeLb();
+      $("empty").hidden = !(loaded && !photos.length);
+      renderQuota();
+    }
+
+    /* ---------- foto dari QR display: sorot + pilih + buka ---------- */
+    let targetMissT = 0;
+    function focusTarget() {
+      const id = targetId; const t = tiles.get(id); if (!t) return;
+      targetId = null; clearTimeout(targetMissT);
+      setSelecting(true);
+      const ok = trySelect(id, true);
+      renderSel();
+      t.el.scrollIntoView({ block: "center", behavior: "auto" });
+      t.el.classList.remove("hl"); void t.el.offsetWidth; t.el.classList.add("hl");
+      openLb(id);
+      if (!ok) $("lb-msg").textContent = limitMsg();
+    }
+
+    /* ---------- lightbox ---------- */
+    function openLb(id) {
+      if (!tiles.has(id)) return;
+      lbId = id;
+      const row = tiles.get(id).row;
+      $("lb-img").src = row.public_url;
+      $("lb-cap").textContent = "Diabadikan " + timeFmt(row.created_at);
+      $("lb-msg").textContent = "";
+      $("lb").hidden = false; document.body.classList.add("lb-open");
+      renderLb();
+    }
+    function closeLb() { lbId = null; $("lb").hidden = true; document.body.classList.remove("lb-open"); }
+    function renderLb() {
+      if (!lbId || !tiles.has(lbId)) return;
+      const free = isFree(lbId), left = remaining();
+      $("lb-dl-label").textContent = free ? "Unduh lagi" : "Download foto ini";
+      $("lb-dl").disabled = busy || (!free && left <= 0);
+      const s = selected.has(lbId);
+      $("lb-sel").textContent = s ? "Terpilih ✓" : "Pilih foto ini";
+      $("lb-sel").classList.toggle("btn-primary", false);
+      if (!free && left <= 0 && !$("lb-msg").textContent) $("lb-msg").textContent = "Jatah unduhan HP ini sudah habis 🥺";
+    }
+    function stepLb(d) {
+      if (!lbId) return;
+      const i = photos.findIndex((p) => p.id === lbId);
+      const n = photos[i + d]; if (n) openLb(n.id);
+    }
+
+    /* ---------- unduh ---------- */
+    const blobCache = new Map();
+    async function getBlob(row) {
+      if (blobCache.has(row.id)) return blobCache.get(row.id);
+      const res = await fetch(row.public_url, { mode: "cors", cache: "force-cache" });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const b = await res.blob(); blobCache.set(row.id, b); return b;
+    }
+    function saveBlob(blob, name) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = name; a.rel = "noopener";
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    }
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    function allowedList(ids) {
+      const out = []; let budget = remaining();
+      ids.forEach((id) => { if (!tiles.has(id)) return; if (isFree(id)) out.push(id); else if (budget > 0) { out.push(id); budget--; } });
+      return out;
+    }
+    async function downloadIds(ids, msgEl) {
+      if (busy) return 0;
+      const list = allowedList(ids);
+      if (!list.length) { toast(limitMsg(), 4200); return 0; }
+      busy = true; renderSel(); renderLb();
+      let done = 0;
+      try {
+        for (let i = 0; i < list.length; i++) {
+          const row = tiles.get(list[i]) && tiles.get(list[i]).row; if (!row) continue;
+          if (!isFree(row.id) && remaining() <= 0) break;
+          const say = "Menyiapkan foto " + (i + 1) + " dari " + list.length + "…";
+          if (msgEl) msgEl.textContent = say; else toast(say, 8000);
+          try {
+            const blob = await getBlob(row);
+            saveBlob(blob, fileName(row));
+            markDownloaded(row.id); done++;
+          } catch (e) {
+            if (list.length === 1) {
+              markDownloaded(row.id); done++;
+              window.open(row.public_url, "_blank", "noopener");
+            }
+          }
+          renderQuota();
+          if (i < list.length - 1) await wait(900);
+        }
+      } finally { busy = false; renderQuota(); }
+      const text = done ? "Yay! " + done + " foto sedang diunduh 💗" + (remaining() <= 0 ? " Jatah unduhanmu sudah habis." : " Sisa jatah: " + remaining() + "/" + LIMIT) : "Foto gagal diunduh. Coba lagi ya.";
+      if (msgEl) msgEl.textContent = text; else toast(text, 4200);
+      return done;
+    }
+    async function shareIds(ids) {
+      if (busy) return;
+      const list = allowedList(ids); if (!list.length) { toast(limitMsg(), 4200); return; }
+      busy = true; renderSel();
+      try {
+        toast("Menyiapkan foto…", 8000);
+        const rows = list.map((id) => tiles.get(id).row);
+        const files = [];
+        for (const r of rows) { const b = await getBlob(r); files.push(new File([b], fileName(r), { type: b.type || "image/jpeg" })); }
+        if (!(navigator.canShare && navigator.canShare({ files }))) throw new Error("noshare");
+        toast("Pilih “Simpan Gambar” ya 💗", 3000);
+        await navigator.share({ files, title: "Foto photobooth Ratna & Nuryadi", text: "#MenujuRidhaRN" });
+        rows.forEach((r) => markDownloaded(r.id));
+        toast("Yay! " + rows.length + " foto tersimpan 💗 Sisa jatah: " + remaining() + "/" + LIMIT, 4200);
+        setSelecting(false);
+      } catch (e) {
+        if (!e || e.name !== "AbortError") toast("Tidak bisa membagikan — pakai tombol Download ya.");
+      } finally { busy = false; renderQuota(); }
+    }
+
+    /* ---------- data ---------- */
+    async function fetchAll() {
+      const { data, error } = await client.from(CONFIG.table).select("id, public_url, created_at").order("created_at", { ascending: false }).limit(1000);
+      if (error) throw error;
+      return data || [];
+    }
+    async function poll() {
+      if (!client) return;
+      try {
+        const rows = await fetchAll();
+        const ids = new Set(rows.map((r) => String(r.id)));
+        [...tiles.keys()].forEach((id) => { if (!ids.has(id)) removePhoto(id); });
+        rows.slice().reverse().forEach((r) => addPhoto(r, loaded));
+        if (!loaded) {
+          loaded = true;
+          $("loading").hidden = true;
+          if (targetId && !tiles.has(targetId)) {
+            toast("Fotonya sedang disiapkan… tunggu sebentar ya ✨", 5000);
+            targetMissT = setTimeout(() => { if (targetId) { toast("Foto dari kode QR tidak ditemukan 🥺 Cari fotomu di galeri ya.", 5000); targetId = null; } }, 25000);
+          }
+        }
+        $("error").hidden = true;
+        $("empty").hidden = !!photos.length;
+        renderQuota();
+      } catch (e) {
+        console.warn("gagal memuat", e);
+        if (!loaded) { $("loading").hidden = true; $("error").hidden = false; }
+      }
+    }
+    function subscribe() {
+      if (!client || !client.channel) return;
+      try {
+        client.channel("photos-galeri-tamu")
+          .on("postgres_changes", { event: "*", schema: "public", table: CONFIG.table }, (p) => {
+            if (p.eventType === "INSERT") addPhoto(p.new, true);
+            else if (p.eventType === "DELETE") removePhoto(p.old && p.old.id);
+            else if (p.eventType === "UPDATE" && p.new && p.new.public_url) addPhoto(p.new, true);
+            renderQuota();
+          })
+          .subscribe();
+      } catch (e) {}
+    }
+
+    /* ---------- events ---------- */
+    $("btn-sel").addEventListener("click", () => setSelecting(!selecting));
+    $("btn-cancel").addEventListener("click", () => setSelecting(false));
+    $("btn-dl").addEventListener("click", async () => { const n = await downloadIds([...selected]); if (n) setSelecting(false); });
+    $("btn-share").addEventListener("click", () => shareIds([...selected]));
+    $("lb-x").addEventListener("click", closeLb);
+    $("lb-p").addEventListener("click", () => stepLb(-1));
+    $("lb-n").addEventListener("click", () => stepLb(1));
+    $("lb-dl").addEventListener("click", async () => {
+      const id = lbId; if (!id) return;
+      const n = await downloadIds([id], $("lb-msg"));
+      if (n) { selected.delete(id); renderSel(); }
+    });
+    $("lb-sel").addEventListener("click", () => {
+      if (!lbId) return;
+      if (!selecting) setSelecting(true);
+      toggleSelect(lbId);
+      if (selected.has(lbId)) setTimeout(closeLb, 250);
+    });
+    $("lb").addEventListener("click", (e) => { if (e.target === $("lb")) closeLb(); });
+    $("lb-img").addEventListener("contextmenu", (e) => e.preventDefault());
+    document.addEventListener("keydown", (e) => {
+      if ($("lb").hidden) return;
+      if (e.key === "Escape") closeLb(); else if (e.key === "ArrowLeft") stepLb(-1); else if (e.key === "ArrowRight") stepLb(1);
+    });
+    let tx = null;
+    $("lb").addEventListener("touchstart", (e) => { tx = e.touches[0].clientX; }, { passive: true });
+    $("lb").addEventListener("touchend", (e) => {
+      if (tx == null) return; const dx = e.changedTouches[0].clientX - tx; tx = null;
+      if (Math.abs(dx) > 60) stepLb(dx < 0 ? 1 : -1);
+    }, { passive: true });
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) poll(); });
+
+    try { if (navigator.canShare && navigator.canShare({ files: [new File([""], "x.jpg", { type: "image/jpeg" })] }) && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) $("btn-share").hidden = false; } catch (e) {}
+
+    loadDownloaded();
+    renderQuota();
+    try { client = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey); } catch (e) { client = null; }
+    if (!client) { $("loading").hidden = true; $("error").hidden = false; }
+    else { poll(); subscribe(); setInterval(poll, POLL_MS); }
+
+    window.__galeri = {
+      state: () => ({ photos: photos.length, remaining: remaining(), downloaded: [...downloaded], selected: [...selected], selecting, lbId, loaded }),
+      simulateNew: (row) => addPhoto(row, true),
+      simulateDelete: (id) => removePhoto(id),
+      LIMIT
+    };
+  })();
+  </script>
+</body>
+</html>

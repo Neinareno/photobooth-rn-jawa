@@ -1,0 +1,29 @@
+/* Display TV — tema Jawa peach/rose/brown */
+:root {
+  --jw-peach: #F3DCD0;
+  --jw-cream: #F8EEE6;
+  --jw-rose: #D9A5A0;
+  --jw-mauve: #8B4F4A;
+  --jw-brown: #8B5A44;
+  --jw-ease: cubic-bezier(0.4, 0, 0.2, 1);
+}
+html, body { background: #F3DCD0 !important; color: #6B3A36; }
+#bg { background: #F3DCD0; }
+#bg .blob { background: #D9A5A0 !important; opacity: 0.25; filter: blur(60px); }
+.bg-layer { transition: opacity 0.8s cubic-bezier(0.4,0,0.2,1); }
+.brand.glass, .counter.glass, .empty-frame.glass, .qr {
+  background: rgba(248,238,230,0.86) !important;
+  border: 1px solid rgba(139,90,68,0.2) !important;
+  box-shadow: 0 16px 40px -24px rgba(80,40,30,0.35);
+}
+.heading, .date { font-family: Cinzel, "Cormorant Garamond", serif !important; letter-spacing: 0.22em; color: #8B4F4A !important; text-transform: uppercase; }
+.names .n { font-family: "Great Vibes", "Ms Madi", cursive !important; color: #8B4F4A !important; }
+.names .amp { font-family: "Great Vibes", cursive !important; color: #A56A64 !important; }
+.tagline, .hashtag, .place, .time, .venue { font-family: "Cormorant Garamond", serif; color: #8B5A44; }
+.place { font-family: Cinzel, serif; letter-spacing: 0.18em; font-size: 0.85rem; margin-top: 8px; }
+.time, .venue { font-size: 0.9rem; }
+#newbanner, #flashlayer { background: rgba(248,238,230,0.9); color: #8B4F4A; }
+.dl { background: rgba(248,238,230,0.94) !important; color: #6B3A36; border-color: rgba(139,90,68,0.25); }
+@media (prefers-reduced-motion: reduce) {
+  .bg-layer, .slide, .floaters img, #bg .blob { animation: none !important; transition: none !important; }
+}

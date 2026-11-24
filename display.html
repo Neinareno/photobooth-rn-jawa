@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#F3DCD0" />
+  <meta name="robots" content="noindex" />
+  <title>Layar Display · Ratna Prastyani &amp; Nuryadi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Great+Vibes&family=Ms+Madi&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="display-genz.css" />
+  <link rel="stylesheet" href="display-jawa.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="qrcode.min.js"></script>
+</head>
+<body class="is-empty">
+  <div id="bg"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="blob b4"></div><div class="blob b5"></div><div class="bg-layer" id="bgA"></div><div class="bg-layer" id="bgB"></div></div>
+  <canvas id="sparkles"></canvas>
+  <div class="floaters" aria-hidden="true">
+    <img src="stickers/heart-pink.webp" alt="" style="left:30.5%;top:5%;--w:6vh;--d:8s;--dx:.8vw;--dy:-2vh" />
+    <img src="stickers/butterfly.webp" alt="" style="left:31%;bottom:8%;--w:8vh;--d:10s;--dl:-3s;--dx:1.4vw;--dy:-3vh;--r0:-14deg;--r1:10deg" />
+    <img src="stickers/sparkle-blue.webp" alt="" style="right:14.5%;top:7%;--w:5.4vh;--d:7s;--dl:-2s" />
+    <img src="stickers/bow-lilac.webp" alt="" style="right:14%;bottom:6%;--w:8vh;--d:11s;--dl:-5s;--dx:-1vw" />
+    <img src="stickers/heart-lilac.webp" alt="" style="right:2%;top:46%;--w:5.4vh;--d:8.5s;--dl:-4s;--dx:-.6vw" />
+    <img src="stickers/star-silver.webp" alt="" style="left:1.5%;top:3%;--w:5vh;--d:9.5s;--dl:-6s" />
+  </div>
+
+  <div id="app">
+    <aside class="side">
+      <div class="brand glass">
+        <img class="bow" src="stickers/bow-pink.webp" alt="" aria-hidden="true" />
+        <div class="heading">THE WEDDING OF</div>
+        <div class="names"><span class="n">Ratna Prastyani</span><span class="amp">&amp;</span><span class="n">Nuryadi</span></div>
+        <div class="date">29 . 01 . 2027</div>
+        <div class="tagline">Two Hearts • One Promise • Forever</div>
+        <div class="hashtag">#MenujuRidhaRN</div>
+        <div class="place">AULA KELUARGA</div>
+        <div class="time">Resepsi 12.00 WIB - 15.00 WIB</div>
+        <div class="venue">Kp. Gendong RT.005/RW.003, Mangunharjo, Kec. Tembalang</div>
+      </div>
+      <div class="qr" id="qr">
+        <canvas id="qr-canvas" width="240" height="240" aria-label="Kode QR photobooth"></canvas>
+        <div class="qt"><b>Scan &amp; foto yuk! 📸</b><span>Arahkan kamera HP ke kode ini, pilih bingkai favoritmu, lalu tekan Simpan.</span></div>
+      </div>
+      <div class="counter glass" id="count">
+        <div class="heart">💗</div>
+        <div><span id="count-num">0</span></div>
+        <div class="lbl">kenangan tersimpan<small><i></i>LIVE dari photobooth</small></div>
+      </div>
+    </aside>
+
+    <main class="stage" id="stage">
+      <div class="slide" id="slideA"><div class="kb"><div class="card">
+        <div class="ph"><img alt="Foto tamu" decoding="async" /></div>
+        <div class="shine"></div>
+        <span class="badge">BARU ✨</span>
+        <div class="caption"><span class="ctext"></span></div>
+      </div></div></div>
+      <div class="slide" id="slideB"></div>
+      <div class="dl" id="dl" aria-label="Kode QR galeri tamu untuk mengunduh foto yang sedang tampil">
+        <div class="dl-qr"><canvas id="dl-canvas" width="330" height="330"></canvas></div>
+        <b>Scan &amp; download fotomu ⬇️</b>
+        <span>foto ini langsung terpilih ✨</span>
+      </div>
+      <div id="empty">
+        <div class="empty-frame glass">
+          <div class="emo">📸</div>
+          <h2>Belum ada foto nih!</h2>
+          <p>Jadilah yang pertama — scan kode QR, berfoto di photobooth, lalu tekan Simpan. Fotomu langsung tampil di sini ✨</p>
+        </div>
+      </div>
+    </main>
+
+    <section class="recent" aria-label="Foto terbaru">
+      <h3>TERBARU</h3>
+      <div id="recent-list"></div>
+    </section>
+  </div>
+
+  <div id="flashlayer"></div>
+  <div id="newbanner" aria-live="polite"><div class="t1">Foto baru! 📸</div><div class="t2">baru saja diabadikan ✨</div></div>
+  <canvas id="confetti"></canvas>
+
+  <div class="controls">
+    <button type="button" class="ctl" id="btn-next" title="Foto berikutnya (→)" aria-label="Foto berikutnya">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+    </button>
+    <button type="button" class="ctl" id="btn-fs" title="Layar penuh (F)" aria-label="Layar penuh">
+      <svg id="ic-exp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/></svg>
+      <svg id="ic-cmp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="display:none"><path d="M3 8h5V3M16 3v5h5M3 16h5v5M16 21v-5h5"/></svg>
+    </button>
+  </div>
+  <div id="status"><i></i><span id="status-text">Menghubungkan…</span></div>
+  <div id="hint">Tekan tombol layar penuh di kanan atas, atau tombol F pada keyboard.</div>
+
+  <script>
+  (function () {
+    const CONFIG = {
+      supabaseUrl: "",
+      supabaseAnonKey: "sb_publishable_5U20TOgS5LZewLIhR-Mi5g_N-PVHpxi",
+      table: "photos"
+    };
+    const q = new URLSearchParams(location.search);
+    const INTERVAL = Math.max(4, Math.min(30, parseFloat(q.get("interval")) || 7)) * 1000;
+    const NEW_HOLD = Math.max(INTERVAL + 2000, 11000);
+    const POLL_MS = 5000;
+    const TRANSITIONS = ["pop", "flip", "slide", "drop", "swing", "tilt", "zoom"];
+    const KB = ["kb1", "kb2", "kb3", "kb4"];
+
+    const $ = (id) => document.getElementById(id);
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+    // slide B = clone of A's markup
+    $("slideB").innerHTML = $("slideA").innerHTML;
+    const slides = [$("slideA"), $("slideB")];
+    let activeIdx = -1;          // which slide element is showing
+    let photos = [];             // [{id, public_url, created_at}] newest first
+    let known = new Set();       // ids seen
+    let currentId = null;
+    let order = [];              // rotation order of ids
+    let orderPos = 0;
+    const priority = [];         // new photo ids waiting for special show
+    let timer = null;
+    let busy = false;
+    let lastTransition = "";
+    let initialLoaded = false;
+    let rtState = "off";
+    const failed = new Map();
+    let rtEvents = 0;
+
+    function fmtTime(ts) {
+      try {
+        return new Date(ts).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Jakarta" }) + " WIB";
+      } catch (e) { return ""; }
+    }
+
+    function setStatus() {
+      const st = $("status");
+      st.className = rtState === "live" ? "live" : (rtState === "poll" ? "poll" : "");
+      $("status-text").textContent = (rtState === "live" ? "Langsung (realtime)" : rtState === "poll" ? "Memperbarui tiap 5 detik" : "Menghubungkan…") + " · " + photos.length + " foto";
+    }
+    let lastCount = 0;
+    function updateCount() {
+      const n = photos.length;
+      $("count-num").textContent = String(n);
+      if (n > lastCount && initialLoaded) { const c = $("count"); c.classList.remove("bump"); void c.offsetWidth; c.classList.add("bump"); }
+      lastCount = n;
+      document.body.classList.toggle("is-empty", n === 0);
+      setStatus();
+      renderThumbs();
+    }
+    /* strip foto terbaru (maks. 6, terbaru di atas) */
+    function renderThumbs() {
+      const box = $("recent-list"); if (!box) return;
+      const list = photos.slice(0, 6);
+      const key = list.map((p) => String(p.id)).join(",");
+      if (box.dataset.key !== key) {
+        const had = box.dataset.key != null;
+        const old = new Set((box.dataset.key || "").split(","));
+        const prev = new Map([...box.children].map((el) => [el.dataset.id, el]));
+        const frag = document.createDocumentFragment();
+        list.forEach((p) => {
+          let d = prev.get(String(p.id));
+          if (!d) {
+            d = document.createElement("div"); d.className = "th"; d.dataset.id = String(p.id);
+            const im = document.createElement("img"); im.decoding = "async"; im.alt = ""; im.src = p.public_url; d.appendChild(im);
+            if (had && !old.has(String(p.id))) d.classList.add("pop");
+          }
+          frag.appendChild(d);
+        });
+        box.replaceChildren(frag);
+        box.dataset.key = key;
+      }
+      for (const el of box.children) el.classList.toggle("cur", el.dataset.id === String(currentId));
+    }
+
+    /* ---------- data ---------- */
+    let client = null;
+    try { client = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey); } catch (e) { console.warn(e); }
+
+    function normalize(row) { return { id: row.id, public_url: row.public_url, created_at: row.created_at }; }
+
+    function rebuildOrder() {
+      // rotasi dari yang terbaru ke terlama, lalu ulang
+      order = photos.map((p) => p.id);
+      const pos = currentId ? order.indexOf(currentId) : -1;
+      orderPos = pos >= 0 ? pos + 1 : 0;
+    }
+
+    function addPhoto(row, isNew) {
+      if (!row || !row.id || !row.public_url) return;
+      if (known.has(row.id)) {
+        const p = photos.find((x) => x.id === row.id);
+        if (p && p.public_url !== row.public_url) p.public_url = row.public_url;
+        return;
+      }
+      known.add(row.id);
+      photos.push(normalize(row));
+      photos.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      rebuildOrder();
+      updateCount();
+      if (isNew && initialLoaded) {
+        priority.push(row.id);
+        preload(row.public_url).catch(() => {});
+        kick();
+      } else if (photos.length === 1 && initialLoaded) {
+        kick();
+      }
+    }
+
+    function removePhoto(id) {
+      if (!id || !known.has(id)) return;
+      known.delete(id);
+      photos = photos.filter((p) => p.id !== id);
+      for (let i = priority.length - 1; i >= 0; i--) if (priority[i] === id) priority.splice(i, 1);
+      const wasCurrent = currentId === id;
+      rebuildOrder();
+      updateCount();
+      if (wasCurrent) {
+        currentId = null;
+        if (photos.length) kick(true);
+        else hideAll();
+      }
+    }
+
+    async function fetchAll() {
+      if (!client) return null;
+      const { data, error } = await client.from(CONFIG.table)
+        .select("id, public_url, created_at")
+        .order("created_at", { ascending: false })
+        .limit(1000);
+      if (error) throw error;
+      return data || [];
+    }
+
+    async function poll() {
+      try {
+        const rows = await fetchAll();
+        if (!rows) return;
+        const ids = new Set(rows.map((r) => r.id));
+        // hapus yang sudah tidak ada
+        [...known].forEach((id) => { if (!ids.has(id)) removePhoto(id); });
+        // tambahkan yang baru (urut lama → baru supaya antrean benar)
+        rows.slice().reverse().forEach((r) => addPhoto(r, initialLoaded));
+        if (!initialLoaded) {
+          initialLoaded = true;
+          updateCount();
+          if (photos.length) kick(true);
+        }
+        if (rtState !== "live") rtState = "poll";
+        setStatus();
+      } catch (e) {
+        console.warn("poll gagal", e);
+      }
+    }
+
+    function subscribeRealtime() {
+      if (!client || !client.channel) return;
+      try {
+        client.channel("photos-display")
+          .on("postgres_changes", { event: "*", schema: "public", table: CONFIG.table }, (payload) => {
+            rtState = "live";
+            rtEvents++;
+            if (payload.eventType === "INSERT") addPhoto(payload.new, true);
+            else if (payload.eventType === "DELETE") removePhoto(payload.old && payload.old.id);
+            else if (payload.eventType === "UPDATE") {
+              if (payload.new && payload.new.public_url) addPhoto(payload.new, false);
+            }
+            setStatus();
+          })
+          .subscribe((status) => {
+            if (status === "SUBSCRIBED") { rtState = "live"; }
+            else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") { rtState = "poll"; }
+            setStatus();
+          });
+      } catch (e) { console.warn("realtime gagal", e); }
+    }
+
+    /* ---------- images ---------- */
+    const cache = new Map();
+    function preload(url) {
+      if (cache.has(url)) return cache.get(url);
+      const pr = new Promise((resolve, reject) => {
+        const im = new Image();
+        im.decoding = "async";
+        im.onload = async () => { try { if (im.decode) await im.decode(); } catch (e) {} resolve(im); };
+        im.onerror = () => { cache.delete(url); reject(new Error("gagal memuat")); };
+        im.src = url;
+      });
+      cache.set(url, pr);
+      if (cache.size > 40) cache.delete(cache.keys().next().value);
+      return pr;
+    }
+
+    /* ---------- background ---------- */
+    let bgFlip = false;
+    function setBackground(url) {
+      const a = $("bgA"), b = $("bgB");
+      const on = bgFlip ? a : b, off = bgFlip ? b : a;
+      bgFlip = !bgFlip;
+      on.style.backgroundImage = "url(\"" + url.replace(/"/g, "%22") + "\")";
+      on.classList.add("on");
+      off.classList.remove("on");
+    }
+
+    /* ---------- show ---------- */
+    function pickTransition() {
+      let t;
+      do { t = TRANSITIONS[Math.floor(Math.random() * TRANSITIONS.length)]; } while (t === lastTransition && TRANSITIONS.length > 1);
+      lastTransition = t;
+      return t;
+    }
+
+    function clearAnim(el) {
+      el.className = el.className.split(" ").filter((c) => !/^(in|out)-/.test(c)).join(" ");
+    }
+
+    function hideAll() {
+      slides.forEach((s) => { clearAnim(s); s.classList.remove("show", "is-new"); });
+      activeIdx = -1;
+    }
+
+    async function showPhoto(p, special) {
+      const url = p.public_url;
+      try { await preload(url); }
+      catch (e) {
+        const n = (failed.get(p.id) || 0) + 1;
+        failed.set(p.id, n);
+        return false;
+      }
+      if (!known.has(p.id)) return false;
+      const nextIdx = activeIdx === 0 ? 1 : 0;
+      const incoming = slides[nextIdx];
+      const outgoing = activeIdx >= 0 ? slides[activeIdx] : null;
+      const img = incoming.querySelector("img");
+      img.src = url;
+      incoming.querySelector(".ctext").textContent = special ? ("Diabadikan " + fmtTime(p.created_at)) : ("Diabadikan " + fmtTime(p.created_at));
+      const t = special ? "new" : pickTransition();
+      const hold = (special ? NEW_HOLD : INTERVAL) + 2000;
+      incoming.style.setProperty("--kb", KB[Math.floor(Math.random() * KB.length)]);
+      incoming.style.setProperty("--hold", hold + "ms");
+      incoming.style.setProperty("--tilt", (special ? -1.5 : (Math.random() * 5 - 2.5)).toFixed(2) + "deg");
+      clearAnim(incoming);
+      incoming.classList.toggle("is-new", !!special);
+      incoming.classList.remove("show");
+      void incoming.offsetWidth;
+      incoming.classList.add("show", "in-" + t);
+      incoming.style.zIndex = 2;
+      if (outgoing) {
+        outgoing.style.zIndex = 1;
+        clearAnim(outgoing);
+        outgoing.classList.add("out-" + (t === "new" ? "zoom" : t));
+        const og = outgoing;
+        setTimeout(() => { if (og !== slides[activeIdx]) { og.classList.remove("show", "is-new"); clearAnim(og); } }, 2100);
+      }
+      activeIdx = nextIdx;
+      currentId = p.id;
+      renderThumbs();
+      updateDl(p);
+      setBackground(url);
+      // preload berikutnya
+      const nx = peekNext();
+      if (nx) preload(nx.public_url).catch(() => {});
+      return true;
+    }
+
+    /* ---------- QR unduh untuk foto yang sedang tampil ---------- */
+    const DL_LOCAL = location.protocol === "file:" || /^(localhost|127\.|0\.0\.0\.0|\[::1\])/.test(location.hostname);
+    function idCode(id) {
+      const hx = String(id).replace(/-/g, "");
+      if (!/^[0-9a-f]{32}$/i.test(hx)) return null;
+      let bin = "";
+      for (let i = 0; i < 32; i += 2) bin += String.fromCharCode(parseInt(hx.substr(i, 2), 16));
+      return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    }
+    function dlURL(p) {
+      const base = new URL(DL_LOCAL ? "galeri-tamu.html" : "galeri-tamu", location.href).href.split(/[?#]/)[0];
+      const c = idCode(p.id);
+      return base + (c ? "?f=" + c : "?id=" + encodeURIComponent(p.id));
+    }
+    let dlId = null;
+    function updateDl(p) {
+      const box = $("dl");
+      if (!box || q.get("dl") === "0") { if (box) box.hidden = true; return; }
+      if (!p || !(window.QRCode && QRCode.toCanvas)) return;
+      if (p.id === dlId) return;
+      dlId = p.id;
+      const url = dlURL(p);
+      box.dataset.url = url;
+      QRCode.toCanvas($("dl-canvas"), url, { width: 330, margin: 2, errorCorrectionLevel: "L", color: { dark: "#2B1C1C", light: "#FFFFFF" } }, () => {});
+      box.classList.remove("swap"); void box.offsetWidth; box.classList.add("swap");
+    }
+
+    function peekNext() {
+      if (!order.length) return null;
+      const id = order[orderPos % order.length];
+      return photos.find((p) => p.id === id) || null;
+    }
+
+    function takeNext() {
+      if (!order.length) return null;
+      for (let tries = 0; tries < order.length; tries++) {
+        const id = order[orderPos % order.length];
+        orderPos = (orderPos + 1) % order.length;
+        const p = photos.find((x) => x.id === id);
+        if (!p) continue;
+        if ((failed.get(id) || 0) >= 3) continue;
+        if (id === currentId && order.length > 1) continue;
+        return p;
+      }
+      return null;
+    }
+
+    async function step() {
+      if (busy) return;
+      busy = true;
+      clearTimeout(timer);
+      let wait = INTERVAL;
+      try {
+        if (priority.length) {
+          const id = priority.shift();
+          const p = photos.find((x) => x.id === id);
+          if (p) {
+            celebrate();
+            await sleep(450);
+            const ok = await showPhoto(p, true);
+            if (ok) {
+              wait = NEW_HOLD;
+              // lanjutkan rotasi dari foto baru ini
+              const pos = order.indexOf(p.id);
+              orderPos = pos >= 0 ? pos + 1 : orderPos;
+            } else wait = 300;
+          } else wait = 50;
+        } else if (photos.length) {
+          const p = takeNext();
+          if (p && (p.id !== currentId || activeIdx < 0)) {
+            const ok = await showPhoto(p, false);
+            if (!ok) wait = 400;
+          }
+        } else {
+          hideAll();
+        }
+      } finally {
+        busy = false;
+        timer = setTimeout(step, wait);
+      }
+    }
+
+    function kick(immediate) {
+      clearTimeout(timer);
+      if (busy) { timer = setTimeout(step, 600); return; }
+      timer = setTimeout(step, immediate ? 50 : 200);
+    }
+
+    /* ---------- celebration ---------- */
+    function celebrate() {
+      const banner = $("newbanner");
+      banner.classList.add("show");
+      clearTimeout(celebrate._t);
+      celebrate._t = setTimeout(() => banner.classList.remove("show"), 5200);
+      const fl = $("flashlayer");
+      fl.classList.remove("go"); void fl.offsetWidth; fl.classList.add("go");
+      const st = $("stage");
+      st.classList.remove("burst"); void st.offsetWidth; st.classList.add("burst");
+      confettiBurst();
+    }
+
+    /* confetti emas */
+    const cf = $("confetti"), cfx = cf.getContext("2d");
+    let pieces = [], cfRunning = false;
+    function sizeCanvas(c) {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      c.width = Math.round(innerWidth * dpr); c.height = Math.round(innerHeight * dpr);
+      c.getContext("2d").setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    function confettiBurst() {
+      sizeCanvas(cf);
+      const colors = ["#F4A7B9", "#FBE6EA", "#C25A72", "#CDBEF0", "#A9CBF2", "#F7E39A", "#BFDDAA", "#F9BFA6", "#FFFFFF"];
+      const stage = $("stage").getBoundingClientRect();
+      const cx = stage.left + stage.width / 2, cy = stage.top + stage.height * 0.42;
+      const n = Math.min(220, Math.round(innerWidth / 7));
+      for (let i = 0; i < n; i++) {
+        const a = Math.random() * Math.PI * 2;
+        const sp = 4 + Math.random() * 11;
+        pieces.push({
+          x: cx, y: cy, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 5,
+          w: 5 + Math.random() * 8, h: 3 + Math.random() * 6, r: Math.random() * Math.PI,
+          vr: (Math.random() - .5) * .35, c: colors[(Math.random() * colors.length) | 0],
+          life: 0, max: 140 + Math.random() * 80, star: Math.random() < .22
+        });
+      }
+      // hujan dari atas
+      for (let i = 0; i < n / 2; i++) {
+        pieces.push({
+          x: Math.random() * innerWidth, y: -20 - Math.random() * 200, vx: (Math.random() - .5) * 2, vy: 2 + Math.random() * 3,
+          w: 5 + Math.random() * 7, h: 3 + Math.random() * 5, r: Math.random() * Math.PI, vr: (Math.random() - .5) * .25,
+          c: colors[(Math.random() * colors.length) | 0], life: 0, max: 260, star: false
+        });
+      }
+      if (!cfRunning) { cfRunning = true; requestAnimationFrame(cfTick); }
+    }
+    function drawHeart(ctx, s) {
+      ctx.beginPath(); ctx.moveTo(0, s * .35);
+      ctx.bezierCurveTo(-s * .05, s * .3, -s * .5, s * .05, -s * .5, -s * .18);
+      ctx.bezierCurveTo(-s * .5, -s * .42, -s * .2, -s * .52, 0, -s * .28);
+      ctx.bezierCurveTo(s * .2, -s * .52, s * .5, -s * .42, s * .5, -s * .18);
+      ctx.bezierCurveTo(s * .5, s * .05, s * .05, s * .3, 0, s * .35);
+      ctx.closePath(); ctx.fill();
+    }
+    function drawStar(ctx, r) {
+      ctx.beginPath();
+      for (let i = 0; i < 8; i++) {
+        const rad = i % 2 ? r * .38 : r;
+        const a = i * Math.PI / 4;
+        ctx.lineTo(Math.cos(a) * rad, Math.sin(a) * rad);
+      }
+      ctx.closePath(); ctx.fill();
+    }
+    function cfTick() {
+      cfx.clearRect(0, 0, innerWidth, innerHeight);
+      pieces = pieces.filter((p) => p.life < p.max && p.y < innerHeight + 40);
+      for (const p of pieces) {
+        p.life++; p.vy += .16; p.vx *= .985; p.vy *= .99; p.x += p.vx; p.y += p.vy; p.r += p.vr;
+        const fade = Math.min(1, (p.max - p.life) / 40);
+        cfx.save(); cfx.globalAlpha = fade; cfx.translate(p.x, p.y); cfx.rotate(p.r); cfx.fillStyle = p.c;
+        if (p.star) drawHeart(cfx, p.w * 1.1);
+        else cfx.fillRect(-p.w / 2, -p.h / 2 * Math.abs(Math.cos(p.life * .1 + p.r)), p.w, p.h);
+        cfx.restore();
+      }
+      if (pieces.length) requestAnimationFrame(cfTick);
+      else { cfRunning = false; cfx.clearRect(0, 0, innerWidth, innerHeight); }
+    }
+
+    /* partikel emas halus (latar) */
+    const sp = $("sparkles"), spx = sp.getContext("2d");
+    let motes = [];
+    const MOTE_COLORS = ["244,167,185", "205,190,240", "169,203,242", "247,227,154", "191,221,170", "255,255,255"];
+    function initMotes() {
+      sizeCanvas(sp);
+      const n = Math.round(Math.min(34, innerWidth * innerHeight / 60000));
+      motes = Array.from({ length: n }, () => newMote(true));
+    }
+    function newMote(anywhere) {
+      return {
+        x: Math.random() * innerWidth, y: anywhere ? Math.random() * innerHeight : innerHeight + 30,
+        r: 5 + Math.random() * 9, vy: .25 + Math.random() * .45, vx: (Math.random() - .5) * .2, k: Math.random() < .55 ? 0 : 1,
+        c: MOTE_COLORS[(Math.random() * MOTE_COLORS.length) | 0],
+        ph: Math.random() * Math.PI * 2, sp: .01 + Math.random() * .03
+      };
+    }
+    let lastT = 0;
+    function spTick(t) {
+      requestAnimationFrame(spTick);
+      if (document.hidden) return;
+      if (t - lastT < 30) return; // ~33fps cukup
+      lastT = t;
+      spx.clearRect(0, 0, innerWidth, innerHeight);
+      for (const m of motes) {
+        m.y -= m.vy; m.x += m.vx + Math.sin(m.ph) * .12; m.ph += m.sp;
+        if (m.y < -30) Object.assign(m, newMote(false));
+        const a = .35 + .45 * (0.5 + 0.5 * Math.sin(m.ph * 2));
+        spx.save(); spx.translate(m.x, m.y); spx.rotate(Math.sin(m.ph) * .35);
+        spx.fillStyle = "rgba(" + m.c + "," + a.toFixed(3) + ")";
+        if (m.k === 0) drawHeart(spx, m.r * 2);
+        else { const r = m.r; spx.beginPath(); spx.moveTo(0, -r); spx.quadraticCurveTo(r * .14, -r * .14, r, 0); spx.quadraticCurveTo(r * .14, r * .14, 0, r); spx.quadraticCurveTo(-r * .14, r * .14, -r, 0); spx.quadraticCurveTo(-r * .14, -r * .14, 0, -r); spx.fill(); }
+        spx.restore();
+      }
+    }
+
+    /* ---------- UI ---------- */
+    function toggleFs() {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen?.().catch(() => {});
+      else document.exitFullscreen?.();
+    }
+    function syncFs() {
+      const on = !!document.fullscreenElement;
+      $("ic-exp").style.display = on ? "none" : "";
+      $("ic-cmp").style.display = on ? "" : "none";
+      if (on) $("hint").style.display = "none";
+      requestWakeLock();
+    }
+    let idleT = null;
+    function wake() {
+      document.body.classList.remove("idle");
+      clearTimeout(idleT);
+      idleT = setTimeout(() => document.body.classList.add("idle"), 3000);
+    }
+    let wakeLock = null;
+    async function requestWakeLock() {
+      try { if ("wakeLock" in navigator && !wakeLock) { wakeLock = await navigator.wakeLock.request("screen"); wakeLock.addEventListener("release", () => { wakeLock = null; }); } } catch (e) {}
+    }
+
+    function drawQR() {
+      if (q.get("qr") === "0") { $("qr").hidden = true; return; }
+      const target = new URL("./", location.href).href;
+      if (window.QRCode && QRCode.toCanvas) {
+        QRCode.toCanvas($("qr-canvas"), target, { width: 240, margin: 1, color: { dark: "#5B3A33", light: "#FFFFFF" } }, () => {});
+      } else $("qr").hidden = true;
+    }
+
+    $("btn-fs").addEventListener("click", toggleFs);
+    $("btn-next").addEventListener("click", () => kick(true));
+    document.addEventListener("fullscreenchange", syncFs);
+    ["mousemove", "mousedown", "touchstart", "keydown"].forEach((ev) => document.addEventListener(ev, wake, { passive: true }));
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "f" || e.key === "F") toggleFs();
+      else if (e.key === "ArrowRight" || e.key === " ") kick(true);
+    });
+    document.addEventListener("dblclick", toggleFs);
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) { requestWakeLock(); poll(); } });
+    addEventListener("resize", () => { initMotes(); });
+
+    window.__display = {
+      getState: () => ({ count: photos.length, currentId, rtState, rtEvents, priority: priority.slice(), activeIdx, initialLoaded, dlUrl: ($("dl") && $("dl").dataset.url) || null }),
+      poll, celebrate, next: () => kick(true),
+      simulateNew: (row) => addPhoto(row, true)
+    };
+
+    initMotes();
+    requestAnimationFrame(spTick);
+    drawQR();
+    wake();
+    updateCount();
+    subscribeRealtime();
+    poll();
+    setInterval(poll, POLL_MS);
+    requestWakeLock();
+  })();
+  </script>
+</body>
+</html>

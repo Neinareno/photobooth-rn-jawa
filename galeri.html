@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#F3DCD0" />
+  <title>Galeri Photobooth · Ratna &amp; Nuryadi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Parisienne&family=Cinzel:wght@500;600;700&family=Jost:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="pin.js"></script>
+  <style>
+    :root {
+      --bg: #4A2E18; --bg-deep: #2A1810; --cream: #F6EBD4; --gold: #C9A227;
+      --gold-light: #E8D48B; --text: #F6EBD4; --muted: #E4D4B4; --heading: #E8D48B;
+      --font-serif: "Cormorant Garamond", Palatino, "Times New Roman", serif;
+      --font-display: "Cinzel", "Playfair Display", "Cormorant Garamond", Palatino, serif;
+      --font-ui: Jost, "Segoe UI", system-ui, sans-serif;
+      --font-script: "Parisienne", "Segoe Script", cursive;
+      --safe-t: env(safe-area-inset-top, 0px);
+      --safe-b: env(safe-area-inset-bottom, 0px);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+    body {
+      min-height: 100dvh;
+      font-family: var(--font-ui);
+      font-size: 16px;
+      line-height: 1.45;
+      background: radial-gradient(ellipse at 50% 0%, #6B3E26 0%, #4A2E18 45%, #2A1810 100%);
+      color: var(--text);
+    }
+    header {
+      text-align: center;
+      padding: calc(28px + var(--safe-t)) 16px 16px;
+    }
+    .gunungan { width: 40px; height: 54px; margin: 0 auto 8px; color: var(--gold); }
+    header h1 { font-family: var(--font-script); font-size: clamp(2.2rem, 8vw, 3.1rem); font-weight: 400; color: var(--cream); line-height: 1.2; }
+    header .sub { font-family: var(--font-display); font-size: clamp(0.95rem, 3.4vw, 1.08rem); letter-spacing: 0.14em; font-weight: 600; color: var(--gold); margin-top: 6px; text-transform: uppercase; }
+    header .tag { font-family: var(--font-serif); font-style: italic; font-size: clamp(1.02rem, 3.6vw, 1.15rem); color: var(--muted); margin-top: 8px; }
+    .toolbar {
+      display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+      padding: 8px 16px 24px;
+    }
+    button {
+      cursor: pointer; border: none; font-family: var(--font-ui);
+      letter-spacing: 0.08em;
+    }
+    .btn-primary {
+      min-height: 52px; padding: 12px 22px;
+      background: linear-gradient(180deg, var(--gold-light), var(--gold) 50%, #8B6914);
+      color: #2A1810; font-weight: 600; font-size: clamp(0.92rem, 3.2vw, 1rem);
+    }
+    .btn-secondary {
+      min-height: 52px; padding: 12px 18px;
+      border: 1px solid var(--gold); background: transparent; color: var(--gold-light);
+      font-size: clamp(0.9rem, 3vw, 0.98rem); font-weight: 500;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 14px;
+      padding: 0 16px calc(40px + var(--safe-b));
+      max-width: 1100px; margin: 0 auto;
+    }
+    .card {
+      position: relative;
+      background: #3C2415;
+      border: 1px solid var(--gold);
+      cursor: pointer;
+      overflow: hidden;
+      aspect-ratio: 2 / 3;
+    }
+    .card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .card .cap {
+      position: absolute; left: 0; right: 0; bottom: 0;
+      padding: 8px;
+      background: linear-gradient(transparent, rgba(0,0,0,0.7));
+      font-size: 0.92rem; color: var(--gold-light);
+    }
+    .empty, .status, .err {
+      text-align: center; padding: 24px 16px; color: var(--muted); font-size: 1.08rem; line-height: 1.45;
+    }
+    #gate {
+      position: fixed; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: radial-gradient(ellipse at 50% 40%, #6B3E26, #2A1810);
+      z-index: 20;
+    }
+    #gate[hidden] { display: none !important; }
+    .gate-card {
+      width: min(400px, 92vw);
+      border: 1px solid var(--gold);
+      padding: 36px 28px;
+      text-align: center;
+      background: rgba(42,24,16,0.7);
+    }
+    .gate-card h2 { font-family: var(--font-display); letter-spacing: 0.14em; color: var(--gold); font-size: clamp(1rem, 3.8vw, 1.12rem); margin-bottom: 8px; }
+    .gate-card p { margin-bottom: 18px; color: var(--muted); font-size: 1.05rem; line-height: 1.45; }
+    .gate-card input {
+      width: 100%; min-height: 52px; padding: 10px;
+      text-align: center; font-size: 1.3rem; letter-spacing: 0.2em;
+      border: 1px solid var(--gold); background: #2A1810; color: var(--cream);
+      margin-bottom: 14px; font-family: var(--font-display);
+    }
+    .gate-card .hint { font-size: 0.85rem; font-style: italic; }
+    .gate-err { color: #E8B4B4; min-height: 1.2em; margin-bottom: 8px; }
+    #lightbox {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.88);
+      display: none; align-items: center; justify-content: center;
+      flex-direction: column; gap: 16px; z-index: 30; padding: 20px;
+    }
+    #lightbox.show { display: flex; }
+    #lightbox img { max-width: min(92vw, 640px); max-height: 78vh; border: 1px solid var(--gold); }
+    .lb-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+    .note { text-align: center; font-size: 1rem; color: var(--muted); padding: 0 16px calc(24px + var(--safe-b)); line-height: 1.45; }
+    @media (max-width: 430px) {
+      .toolbar { padding: 8px 12px 20px; }
+      .toolbar .btn-primary, .toolbar .btn-secondary, .toolbar a.btn-secondary { flex: 1 1 140px; justify-content: center; }
+    }
+
+    .card { display: block; padding: 0; text-align: left; font: inherit; color: inherit; }
+    .card .del {
+      position: absolute; top: 8px; right: 8px; z-index: 3;
+      width: 44px; height: 44px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(42,24,16,0.78); border: 1px solid rgba(232,212,139,0.75); color: #F3C9C0;
+      backdrop-filter: blur(4px);
+    }
+    .card .del:hover { background: #7A2E22; color: #fff; }
+    .card .del svg { width: 20px; height: 20px; }
+    .card .chk {
+      position: absolute; top: 8px; left: 8px; z-index: 3;
+      width: 34px; height: 34px; border-radius: 50%;
+      border: 2px solid var(--gold-light); background: rgba(42,24,16,0.6);
+      display: none; align-items: center; justify-content: center; color: #2A1810;
+    }
+    .card .chk svg { width: 20px; height: 20px; opacity: 0; }
+    body.selecting .card .chk { display: flex; }
+    body.selecting .card .del { display: none; }
+    .card.selected { outline: 3px solid var(--gold-light); outline-offset: -3px; }
+    .card.selected .chk { background: var(--gold-light); }
+    .card.selected .chk svg { opacity: 1; }
+    .card.selected img { filter: brightness(0.75); }
+    .card.removing { animation: cardOut .45s ease forwards; }
+    @keyframes cardOut { to { opacity: 0; transform: scale(0.85) rotate(-2deg); } }
+    .btn-danger {
+      min-height: 52px; padding: 12px 20px;
+      background: linear-gradient(180deg, #A9453A, #7A2E22); color: #FFF4EC;
+      border: 1px solid #E8B4A8; font-weight: 600; font-size: clamp(0.92rem, 3.2vw, 1rem);
+    }
+    .btn-danger:disabled { opacity: .45; cursor: not-allowed; }
+    #btn-del-selected[hidden], #btn-select-all[hidden] { display: none !important; }
+    #confirm {
+      position: fixed; inset: 0; z-index: 40; display: none;
+      align-items: center; justify-content: center; padding: 20px;
+      background: rgba(10,6,4,0.72); backdrop-filter: blur(3px);
+    }
+    #confirm.show { display: flex; }
+    .confirm-card {
+      width: min(420px, 94vw); background: #2F1C11; border: 1px solid var(--gold);
+      padding: 26px 22px 22px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,.5);
+      animation: popc .2s ease;
+    }
+    @keyframes popc { from { transform: scale(.94); opacity: 0; } to { transform: none; opacity: 1; } }
+    .confirm-card h3 { font-family: var(--font-display); color: var(--gold-light); letter-spacing: .08em; font-size: 1.15rem; margin-bottom: 10px; }
+    .confirm-card p { color: var(--muted); font-size: 1.05rem; margin-bottom: 14px; }
+    .confirm-card img { max-height: 160px; margin: 0 auto 12px; border: 1px solid var(--gold); display: block; }
+    .confirm-card input {
+      width: 100%; min-height: 50px; text-align: center; font-size: 1.2rem; letter-spacing: .2em;
+      border: 1px solid var(--gold); background: #2A1810; color: var(--cream); margin-bottom: 12px;
+    }
+    .confirm-card .c-err { color: #F0B8AC; min-height: 1.3em; margin-bottom: 6px; font-size: .98rem; }
+    .confirm-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .confirm-actions button { flex: 1 1 140px; }
+    #toast {
+      position: fixed; left: 50%; bottom: calc(22px + var(--safe-b)); transform: translate(-50%, 30px);
+      background: #2F1C11; border: 1px solid var(--gold); color: var(--cream);
+      padding: 12px 18px; font-size: 1rem; z-index: 50; opacity: 0; pointer-events: none;
+      transition: opacity .25s ease, transform .25s ease; max-width: 92vw; text-align: center;
+    }
+    #toast.show { opacity: 1; transform: translate(-50%, 0); }
+  </style>
+  <link rel="stylesheet" href="jawa.css" />
+</head>
+<body>
+  <div id="gate">
+    <div class="gate-card">
+      <div class="gunungan" aria-hidden="true">
+        <svg viewBox="0 0 80 110" width="40" height="54" fill="currentColor"><path d="M40 4c1.2 0 6.5 9 11 22 3.8 11 6.2 22 3.2 30 8 3 12.5 11 8 20 8 3 6 12-2 18 6 4 4 12-6 16H26c-10-4-12-12-6-16-8-6-10-15-2-18-4.5-9 0-17 8-20-3-8-.6-19 3.2-30C33.5 13 38.8 4 40 4z"/></svg>
+      </div>
+      <h2>GALERI PENGANTIN</h2>
+      <p>Masukkan PIN untuk melihat semua foto photobooth.</p>
+      <div class="gate-err" id="gate-err"></div>
+      <input type="password" id="inp-pin" inputmode="numeric" maxlength="12" placeholder="PIN" autocomplete="off" />
+      <button type="button" class="btn-primary" id="btn-masuk">MASUK</button>
+      <p class="hint" style="margin-top:16px">Perlindungan ini bersifat ringan, bukan keamanan tingkat tinggi.</p>
+    </div>
+  </div>
+
+  <header>
+    <div class="gunungan" aria-hidden="true">
+      <svg viewBox="0 0 80 110" width="40" height="54" fill="currentColor"><path d="M40 4c1.2 0 6.5 9 11 22 3.8 11 6.2 22 3.2 30 8 3 12.5 11 8 20 8 3 6 12-2 18 6 4 4 12-6 16H26c-10-4-12-12-6-16-8-6-10-15-2-18-4.5-9 0-17 8-20-3-8-.6-19 3.2-30C33.5 13 38.8 4 40 4z"/></svg>
+    </div>
+    <div class="sub">THE WEDDING OF</div>
+    <h1>Ratna Prastyani &amp; Nuryadi</h1>
+    <div class="tag">29 Januari 2027 · #MenujuRidhaRN</div>
+  </header>
+  <div class="toolbar">
+    <button type="button" class="btn-primary" id="btn-all">UNDUH SEMUA</button>
+    <button type="button" class="btn-secondary" id="btn-reload">MUAT ULANG</button>
+    <button type="button" class="btn-secondary" id="btn-select">PILIH</button>
+    <button type="button" class="btn-secondary" id="btn-select-all" hidden>PILIH SEMUA</button>
+    <button type="button" class="btn-danger" id="btn-del-selected" hidden disabled>HAPUS TERPILIH (0)</button>
+    <a class="btn-secondary" href="display.html" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;">LAYAR DISPLAY</a>
+    <a class="btn-secondary" href="index.html" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;">BUKA PHOTOBOOTH</a>
+    <a class="btn-secondary" href="admin.html" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;">PENGATURAN</a>
+  </div>
+  <p class="status" id="status">Memuat foto…</p>
+  <div class="grid" id="grid"></div>
+  <p class="note" id="note"></p>
+
+  <div id="lightbox" role="dialog" aria-modal="true">
+    <img id="lb-img" alt="Foto besar" />
+    <div class="lb-actions">
+      <button type="button" class="btn-primary" id="lb-dl">UNDUH</button>
+      <button type="button" class="btn-danger" id="lb-del">HAPUS</button>
+      <button type="button" class="btn-secondary" id="lb-close">TUTUP</button>
+    </div>
+  </div>
+
+  <div id="confirm" role="dialog" aria-modal="true" aria-labelledby="c-title">
+    <div class="confirm-card">
+      <h3 id="c-title">Hapus foto?</h3>
+      <img id="c-img" alt="" hidden />
+      <p id="c-text"></p>
+      <input type="password" id="c-pin" inputmode="numeric" maxlength="12" placeholder="PIN" autocomplete="off" hidden />
+      <div class="c-err" id="c-err"></div>
+      <div class="confirm-actions">
+        <button type="button" class="btn-secondary" id="c-no">BATAL</button>
+        <button type="button" class="btn-danger" id="c-yes">YA, HAPUS</button>
+      </div>
+    </div>
+  </div>
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    // Samakan dengan CONFIG di photobooth.html
+    const CONFIG = {
+      supabaseUrl: "",
+      supabaseAnonKey: "sb_publishable_5U20TOgS5LZewLIhR-Mi5g_N-PVHpxi",
+      storageBucket: "photobooth"
+    };
+
+    const LS = "photobooth-rnjawa-settings-v1";
+
+    function credentials() {
+      let url = CONFIG.supabaseUrl, key = CONFIG.supabaseAnonKey;
+      try {
+        const s = JSON.parse(localStorage.getItem(LS) || "{}");
+        if (s.supabaseUrl) url = s.supabaseUrl;
+        if (s.supabaseAnonKey) key = s.supabaseAnonKey;
+      } catch (e) {}
+      return { url: (url || "").trim(), key: (key || "").trim() };
+    }
+
+    function isDemo() {
+      const q = new URLSearchParams(location.search);
+      return q.get("demo") === "1" || q.has("mock");
+    }
+
+    const MOCK = [
+      { id: "demo-1", created_at: "2027-01-29T11:00:00+07:00", public_url: "", layout: "single", theme: "emas-coklat", _local: true },
+      { id: "demo-2", created_at: "2027-01-29T11:04:00+07:00", public_url: "", layout: "strip3", theme: "gading-emas", _local: true },
+      { id: "demo-3", created_at: "2027-01-29T11:10:00+07:00", public_url: "", layout: "grid4", theme: "sage-emas", _local: true }
+    ];
+
+    function mockThumb(theme, label) {
+      const c = document.createElement("canvas");
+      c.width = 400; c.height = 600;
+      const x = c.getContext("2d");
+      const pal = {
+        "emas-coklat": ["#F6EBD4", "#C9A227", "#3C2415"],
+        "gading-emas": ["#FBF8F0", "#C5A028", "#3C2A18"],
+        "sage-emas": ["#4A5C4E", "#D4AF37", "#F4EFE0"]
+      }[theme] || ["#F6EBD4", "#C9A227", "#3C2415"];
+      x.fillStyle = pal[0]; x.fillRect(0,0,400,600);
+      x.strokeStyle = pal[1]; x.lineWidth = 8; x.strokeRect(18,18,364,564);
+      x.fillStyle = pal[2];
+      x.font = "italic 36px Georgia";
+      x.textAlign = "center";
+      x.fillText("R & N", 200, 280);
+      x.font = "18px Georgia";
+      x.fillText(label, 200, 330);
+      return c.toDataURL("image/jpeg", 0.85);
+    }
+
+    let photos = [];
+    let current = null;
+
+    function fmt(ts) {
+      try {
+        const d = new Date(ts);
+        return d.toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Jakarta" });
+      } catch (e) { return ts || ""; }
+    }
+
+    const TRASH_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M9 7V4.8c0-.4.4-.8.8-.8h4.4c.4 0 .8.4.8.8V7"/><path d="M6.5 7l1 12.2c.1.9.8 1.8 1.8 1.8h5.4c1 0 1.7-.9 1.8-1.8l1-12.2"/><path d="M10 11v6M14 11v6"/></svg>';
+    const CHECK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+    let selecting = false;
+    const selected = new Set();
+
+    function render() {
+      const grid = document.getElementById("grid");
+      const status = document.getElementById("status");
+      grid.innerHTML = "";
+      for (const id of [...selected]) if (!photos.some((p) => p.id === id)) selected.delete(id);
+      updateSelUI();
+      if (!photos.length) {
+        status.textContent = "Belum ada foto. Setelah tamu menyimpan foto, foto akan muncul di sini.";
+        return;
+      }
+      status.textContent = photos.length + " foto";
+      photos.forEach((p, i) => {
+        const card = document.createElement("div");
+        card.className = "card" + (selected.has(p.id) ? " selected" : "");
+        card.tabIndex = 0;
+        card.setAttribute("role", "button");
+        card.dataset.id = p.id;
+        const img = document.createElement("img");
+        img.alt = "Foto " + (i + 1);
+        img.loading = "lazy";
+        img.src = p._thumb || p.public_url;
+        const cap = document.createElement("div");
+        cap.className = "cap";
+        cap.textContent = fmt(p.created_at);
+        const chk = document.createElement("span");
+        chk.className = "chk";
+        chk.innerHTML = CHECK_SVG;
+        const del = document.createElement("button");
+        del.type = "button";
+        del.className = "del";
+        del.title = "Hapus foto ini";
+        del.setAttribute("aria-label", "Hapus foto " + (i + 1));
+        del.innerHTML = TRASH_SVG;
+        del.addEventListener("click", (e) => { e.stopPropagation(); askDelete([p]); });
+        card.appendChild(img);
+        card.appendChild(cap);
+        card.appendChild(chk);
+        card.appendChild(del);
+        const act = () => {
+          if (selecting) toggleSel(p.id, card);
+          else openLb(p);
+        };
+        card.addEventListener("click", act);
+        card.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); act(); } });
+        grid.appendChild(card);
+      });
+    }
+
+    function toggleSel(id, card) {
+      if (selected.has(id)) selected.delete(id); else selected.add(id);
+      if (card) card.classList.toggle("selected", selected.has(id));
+      updateSelUI();
+    }
+    function setSelecting(on) {
+      selecting = !!on;
+      if (!selecting) selected.clear();
+      document.body.classList.toggle("selecting", selecting);
+      document.getElementById("btn-select").textContent = selecting ? "SELESAI MEMILIH" : "PILIH";
+      document.getElementById("btn-del-selected").hidden = !selecting;
+      document.getElementById("btn-select-all").hidden = !selecting;
+      document.querySelectorAll(".card").forEach((c) => c.classList.toggle("selected", selected.has(c.dataset.id)));
+      updateSelUI();
+    }
+    function updateSelUI() {
+      const b = document.getElementById("btn-del-selected");
+      if (!b) return;
+      b.textContent = "HAPUS TERPILIH (" + selected.size + ")";
+      b.disabled = selected.size === 0;
+      const all = document.getElementById("btn-select-all");
+      if (all) all.textContent = photos.length && selected.size === photos.length ? "BATALKAN SEMUA" : "PILIH SEMUA";
+    }
+
+    function toast(msg, ms) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => t.classList.remove("show"), ms || 3200);
+    }
+
+    function storedPin() { return sessionStorage.getItem("pb-rn-pin") || ""; }
+
+    function askDelete(list) {
+      if (!list || !list.length) return;
+      const box = document.getElementById("confirm");
+      const n = list.length;
+      document.getElementById("c-title").textContent = n === 1 ? "Hapus foto ini?" : ("Hapus " + n + " foto?");
+      document.getElementById("c-text").textContent = (n === 1 ? "Foto" : "Semua foto terpilih") + " akan dihapus permanen dari galeri dan layar display. Tindakan ini tidak dapat dibatalkan.";
+      const im = document.getElementById("c-img");
+      if (n === 1 && (list[0]._thumb || list[0].public_url)) { im.src = list[0]._thumb || list[0].public_url; im.hidden = false; }
+      else { im.hidden = true; im.removeAttribute("src"); }
+      const pinInp = document.getElementById("c-pin");
+      pinInp.value = "";
+      pinInp.hidden = !!storedPin();
+      document.getElementById("c-err").textContent = "";
+      const yes = document.getElementById("c-yes");
+      yes.disabled = false;
+      yes.textContent = "YA, HAPUS";
+      box.classList.add("show");
+      (pinInp.hidden ? document.getElementById("c-no") : pinInp).focus();
+      askDelete._list = list;
+    }
+    function closeConfirm() {
+      document.getElementById("confirm").classList.remove("show");
+      askDelete._list = null;
+    }
+
+    async function confirmDelete() {
+      const list = askDelete._list;
+      if (!list) return;
+      const err = document.getElementById("c-err");
+      const yes = document.getElementById("c-yes");
+      const pinInp = document.getElementById("c-pin");
+      const pin = pinInp.hidden ? storedPin() : pinInp.value.trim();
+      if (!pin) { err.textContent = "Masukkan PIN untuk menghapus."; pinInp.hidden = false; pinInp.focus(); return; }
+      yes.disabled = true;
+      yes.textContent = "MENGHAPUS…";
+      err.textContent = "";
+      const res = await deletePhotos(list, pin);
+      yes.disabled = false;
+      yes.textContent = "YA, HAPUS";
+      if (!res.ok) {
+        if (res.error === "invalid_pin") {
+          sessionStorage.removeItem("pb-rn-pin");
+          pinInp.hidden = false; pinInp.value = ""; pinInp.focus();
+        }
+        err.textContent = res.message;
+        return;
+      }
+      if (!pinInp.hidden) sessionStorage.setItem("pb-rn-pin", pin);
+      closeConfirm();
+      if (current && list.some((p) => p.id === current.id)) closeLb();
+      const ids = new Set(res.ids);
+      document.querySelectorAll(".card").forEach((c) => { if (ids.has(c.dataset.id)) c.classList.add("removing"); });
+      await new Promise((r) => setTimeout(r, 420));
+      photos = photos.filter((p) => !ids.has(p.id));
+      ids.forEach((id) => selected.delete(id));
+      if (selecting && !photos.length) setSelecting(false);
+      render();
+      toast(res.ids.length + " foto dihapus" + (res.storageWarn ? " (file cadangan di penyimpanan masih tersisa)" : "") + ".");
+    }
+
+    async function deletePhotos(list, pin) {
+      if (isDemo()) {
+        return { ok: true, ids: list.map((p) => p.id), storageWarn: false };
+      }
+      const { url, key } = credentials();
+      if (!url || !key || !window.supabase) return { ok: false, message: "Supabase belum terhubung." };
+      const client = window.supabase.createClient(url, key);
+      let data, error;
+      try {
+        ({ data, error } = await client.rpc("delete_photos", { p_ids: list.map((p) => p.id), p_pin: pin }));
+      } catch (e) { error = e; }
+      if (error) {
+        if (window.PBPin && PBPin.isMissingFn(error)) {
+          return { ok: false, error: "not_ready", message: "Fitur hapus belum aktif di server (pembaruan SQL belum dijalankan). Hubungi panitia." };
+        }
+        console.warn(error);
+        return { ok: false, error: "network", message: "Gagal menghapus. Periksa koneksi internet lalu coba lagi." };
+      }
+      if (!data || !data.ok) {
+        const e = (data && data.error) || "invalid_pin";
+        return { ok: false, error: e, message: window.PBPin ? PBPin.message({ error: e }) : "PIN tidak sesuai." };
+      }
+      const deleted = Array.isArray(data.deleted) ? data.deleted : [];
+      const paths = deleted.map((d) => d.file_path).filter(Boolean);
+      let storageWarn = false;
+      if (paths.length) {
+        try {
+          const { data: removed, error: se } = await client.storage.from(CONFIG.storageBucket || "photobooth").remove(paths);
+          if (se || !removed || removed.length < paths.length) storageWarn = true;
+        } catch (e) { storageWarn = true; }
+      }
+      // Baris yang sudah tidak ada (mis. dihapus di perangkat lain) tetap dianggap terhapus
+      const ids = list.map((p) => p.id);
+      return { ok: true, ids, storageWarn };
+    }
+
+    function openLb(p) {
+      current = p;
+      document.getElementById("lb-img").src = p._thumb || p.public_url;
+      document.getElementById("lightbox").classList.add("show");
+    }
+    function closeLb() { document.getElementById("lightbox").classList.remove("show"); current = null; }
+
+    async function loadPhotos() {
+      const status = document.getElementById("status");
+      const note = document.getElementById("note");
+      if (isDemo()) {
+        photos = MOCK.map((p) => ({ ...p, _thumb: mockThumb(p.theme, p.layout) }));
+        note.textContent = "Mode pratinjau (data contoh). Hapus ?demo=1 untuk memuat dari Supabase.";
+        render();
+        return;
+      }
+      const { url, key } = credentials();
+      if (!url || !key || !window.supabase) {
+        status.textContent = "Supabase belum diatur. Isi URL dan anon key di halaman admin, atau buka galeri.html?demo=1 untuk pratinjau.";
+        photos = [];
+        render();
+        return;
+      }
+      status.textContent = "Memuat foto…";
+      try {
+        const client = window.supabase.createClient(url, key);
+        const { data, error } = await client.from("photos").select("*").like("file_path","rn-jawa/%").order("created_at", { ascending: false });
+        if (error) throw error;
+        photos = data || [];
+        note.textContent = "";
+        render();
+      } catch (err) {
+        console.warn(err);
+        status.textContent = "Gagal memuat galeri. Periksa URL, kunci, dan kebijakan RLS. Untuk pratinjau, buka galeri.html?demo=1.";
+      }
+    }
+
+    async function downloadOne(p) {
+      const src = p.public_url || p._thumb;
+      if (!src) return;
+      if (src.startsWith("data:")) {
+        const a = document.createElement("a");
+        a.href = src; a.download = "photobooth-" + (p.id || "foto") + ".jpg";
+        a.click();
+        return;
+      }
+      try {
+        const res = await fetch(src);
+        const blob = await res.blob();
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "photobooth-" + (p.id || "foto") + ".jpg";
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      } catch (e) {
+        window.open(src, "_blank");
+      }
+    }
+
+    async function downloadAll() {
+      if (!photos.length) return;
+      const btn = document.getElementById("btn-all");
+      btn.disabled = true;
+      btn.textContent = "MENYIAPKAN…";
+      try {
+        if (!window.JSZip) throw new Error("JSZip tidak dimuat");
+        const zip = new JSZip();
+        for (let i = 0; i < photos.length; i++) {
+          const p = photos[i];
+          const src = p.public_url || p._thumb;
+          let blob;
+          if (src.startsWith("data:")) {
+            blob = await (await fetch(src)).blob();
+          } else {
+            blob = await (await fetch(src)).blob();
+          }
+          const ext = (blob.type || "").includes("png") ? "png" : "jpg";
+          zip.file("photobooth-" + String(i + 1).padStart(3, "0") + "-" + (p.id || i) + "." + ext, blob);
+        }
+        const out = await zip.generateAsync({ type: "blob" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(out);
+        a.download = "galeri-ratna-nuryadi.zip";
+        a.click();
+      } catch (e) {
+        alert("Tidak dapat membuat arsip. Coba unduh satu per satu.");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "UNDUH SEMUA";
+      }
+    }
+
+    async function unlock() {
+      const pin = document.getElementById("inp-pin").value.trim();
+      const btn = document.getElementById("btn-masuk");
+      const errEl = document.getElementById("gate-err");
+      errEl.textContent = "";
+      btn.disabled = true;
+      btn.textContent = "MEMERIKSA…";
+      let res;
+      try {
+        const { url, key } = credentials();
+        const client = (url && key && window.supabase) ? window.supabase.createClient(url, key) : null;
+        res = await PBPin.verify(client, pin);
+      } catch (e) { res = { ok: false, error: "network" }; }
+      btn.disabled = false;
+      btn.textContent = "MASUK";
+      if (!res.ok) {
+        errEl.textContent = PBPin.message(res);
+        return;
+      }
+      sessionStorage.setItem("pb-rn-ok", "1");
+      sessionStorage.setItem("pb-rn-pin", pin);
+      document.getElementById("gate").hidden = true;
+      loadPhotos();
+    }
+
+    document.getElementById("btn-masuk").addEventListener("click", unlock);
+    document.getElementById("inp-pin").addEventListener("keydown", (e) => { if (e.key === "Enter") unlock(); });
+    document.getElementById("btn-reload").addEventListener("click", loadPhotos);
+    document.getElementById("btn-all").addEventListener("click", downloadAll);
+    document.getElementById("lb-close").addEventListener("click", closeLb);
+    document.getElementById("lightbox").addEventListener("click", (e) => { if (e.target.id === "lightbox") closeLb(); });
+    document.getElementById("lb-dl").addEventListener("click", () => current && downloadOne(current));
+    document.getElementById("lb-del").addEventListener("click", () => current && askDelete([current]));
+    document.getElementById("btn-select").addEventListener("click", () => setSelecting(!selecting));
+    document.getElementById("btn-select-all").addEventListener("click", () => {
+      if (selected.size === photos.length) selected.clear();
+      else photos.forEach((p) => selected.add(p.id));
+      document.querySelectorAll(".card").forEach((c) => c.classList.toggle("selected", selected.has(c.dataset.id)));
+      updateSelUI();
+    });
+    document.getElementById("btn-del-selected").addEventListener("click", () => askDelete(photos.filter((p) => selected.has(p.id))));
+    document.getElementById("c-no").addEventListener("click", closeConfirm);
+    document.getElementById("c-yes").addEventListener("click", confirmDelete);
+    document.getElementById("c-pin").addEventListener("keydown", (e) => { if (e.key === "Enter") confirmDelete(); });
+    document.getElementById("confirm").addEventListener("click", (e) => { if (e.target.id === "confirm") closeConfirm(); });
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape") return;
+      if (document.getElementById("confirm").classList.contains("show")) closeConfirm();
+      else closeLb();
+    });
+
+    window.__galeri = { loadPhotos, unlock, CONFIG, credentials, isDemo, getPhotos: () => photos, askDelete, deletePhotos, setSelecting };
+
+    if (sessionStorage.getItem("pb-rn-ok") === "1" || isDemo()) {
+      // demo still shows gate unless already unlocked or ?demo=1 auto? Keep gate for realism,
+      // but tests can unlock via API. Auto-skip gate only if already unlocked.
+      if (sessionStorage.getItem("pb-rn-ok") === "1") {
+        document.getElementById("gate").hidden = true;
+        loadPhotos();
+      }
+    }
+  </script>
+</body>
+</html>

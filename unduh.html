@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#F3DCD0" />
+  <meta name="robots" content="noindex" />
+  <title>Unduh Foto · Ratna &amp; Nuryadi</title>
+  <script>
+    // /unduh sekarang diarahkan ke Galeri Tamu (jatah unduhan 8 foto per HP berlaku di sana).
+    (function () {
+      var local = location.protocol === "file:" || /^(localhost|127\.|0\.0\.0\.0|\[::1\])/.test(location.hostname);
+      location.replace((local ? "galeri-tamu.html" : "galeri-tamu") + location.search + location.hash);
+    })();
+  </script>
+  <style>body{margin:0;min-height:100vh;display:grid;place-items:center;font-family:system-ui,sans-serif;color:#5B3A33;background:linear-gradient(160deg,#FDE7EC,#FFF5EC 45%,#F1EAFB)}a{color:#C25A72;font-weight:700}</style>
+</head>
+<body>
+  <p>Membuka galeri tamu… <a href="galeri-tamu.html" id="go">ketuk di sini</a> bila tidak terbuka.</p>
+  <script>document.getElementById("go").href = "galeri-tamu.html" + location.search;</script>
+</body>
+</html>

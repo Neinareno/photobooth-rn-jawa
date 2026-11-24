@@ -1,0 +1,152 @@
+/* ===== Skin "Pro Pastel" untuk photobooth R & N (pembaruan) =====
+ * Palet Strawberry Milk: krem, pink susu stroberi, cokelat kakao + aksen berry.
+ * Tipografi: Fraunces (display), Plus Jakarta Sans (UI), DM Mono (detail), Ms Madi (aksen "&").
+ * Semua aturan diawali "html body.genz" agar menimpa tema lama tanpa mengubah logika. */
+html body.genz {
+  --pp-cream: #FFF8F4; --pp-pink: #F8D6DD; --pp-pink-2: #FBE6EA; --pp-pink-d: #EFB7C4; --pp-berry: #C25A72;
+  --pp-cocoa: #5B3A33; --pp-cocoa-2: #8A6B63; --pp-line: rgba(91,58,51,.12);
+  --bg: #FFF8F4; --bg-deep: #FBE6EA; --bg-inner: #FFFFFF; --panel: #FFFFFF;
+  --gold: #C25A72; --gold-light: #F8D6DD; --gold-dark: #A9465E;
+  --text: #5B3A33; --text-muted: #8A6B63; --heading: #5B3A33; --accent: #C25A72; --btn-text: #FFFFFF;
+  --shadow: rgba(120,60,75,.16);
+  --font-ui: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Fraunces", "Playfair Display", Georgia, serif;
+  --font-serif: "Fraunces", "Playfair Display", Georgia, serif;
+  --font-script: "Ms Madi", "Great Vibes", cursive;
+  --font-mono: "DM Mono", ui-monospace, Menlo, monospace;
+  font-family: var(--font-ui);
+  background: var(--pp-cream);
+  color: var(--pp-cocoa);
+  -webkit-font-smoothing: antialiased;
+}
+html body.genz #screen-home, html body.genz #screen-quota, html body.genz #screen-result {
+  background:
+    radial-gradient(70% 45% at 50% 0%, rgba(248,214,221,.95) 0%, rgba(248,214,221,0) 72%),
+    radial-gradient(55% 40% at 100% 100%, rgba(248,214,221,.7) 0%, rgba(248,214,221,0) 70%),
+    radial-gradient(50% 35% at 0% 70%, rgba(255,255,255,.9) 0%, rgba(255,255,255,0) 70%),
+    linear-gradient(180deg, #FDEEF1 0%, #FFF8F4 55%, #FDF1EE 100%);
+}
+html body.genz #screen-home::before, html body.genz #screen-quota::before {
+  content: ""; position: fixed; inset: 0; pointer-events: none; opacity: .55;
+  background-image: radial-gradient(rgba(194,90,114,.13) 1.2px, transparent 1.5px); background-size: 26px 26px;
+}
+html body.genz .corner, html body.genz .gunungan { display: none !important; }
+html body.genz .home-frame { padding: 0; }
+html body.genz .home-frame::before, html body.genz .home-frame::after { display: none; }
+html body.genz .home-inner {
+  border: 1px solid rgba(255,255,255,.9); border-radius: 32px;
+  background: rgba(255,255,255,.72); backdrop-filter: blur(14px) saturate(1.1); -webkit-backdrop-filter: blur(14px) saturate(1.1);
+  box-shadow: 0 1px 0 rgba(255,255,255,.9) inset, 0 30px 70px -20px rgba(120,60,75,.28), 0 10px 24px -12px rgba(120,60,75,.18);
+  padding: 40px 24px 26px; overflow: visible;
+}
+html body.genz .home-stage { width: min(480px, 90vw); height: auto; min-height: 0; margin: 40px 0 30px; }
+/* stiker dekorasi — sedikit, rapi, tidak menutupi teks */
+html body.genz .gz-stk { position: absolute; pointer-events: none; z-index: 3; filter: drop-shadow(0 8px 12px rgba(120,60,75,.18)); }
+html body.genz .gz-stk.bow { width: 96px; top: -44px; left: 50%; margin-left: -48px; }
+html body.genz .gz-stk.strawberry { width: 66px; bottom: 18%; right: -24px; transform: rotate(12deg); animation: gzFloat 4.2s ease-in-out infinite; }
+html body.genz .gz-stk.pearls { width: 62px; top: 22%; left: -24px; transform: rotate(-12deg); animation: gzFloat 3.8s ease-in-out infinite reverse; }
+html body.genz .gz-stk.tulips { width: 84px; bottom: -30px; left: -18px; transform: rotate(-10deg); }
+html body.genz .gz-stk.butterfly, html body.genz .gz-stk.sparkle, html body.genz .gz-stk.heart, html body.genz .gz-stk.smiley { display: none; }
+@keyframes gzFloat { 0%,100% { translate: 0 0; } 50% { translate: 0 -6px; } }
+
+html body.genz #home-heading {
+  display: block; font-family: var(--font-ui); font-weight: 700; font-size: clamp(.72rem, 3vw, .8rem);
+  letter-spacing: .28em; text-indent: .28em; color: var(--pp-berry); background: none; border: 0; padding: 0; margin: 0 0 12px; max-width: 100%;
+}
+html body.genz #home-logo { width: min(92px, 24vw); margin: 0 0 4px; filter: drop-shadow(0 6px 14px rgba(120,60,75,.18)); }
+html body.genz .name-a, html body.genz .name-b, html body.genz .name-single {
+  font-family: var(--font-display); font-style: italic; font-weight: 400; font-variation-settings: "SOFT" 60, "opsz" 96;
+  font-size: clamp(2.3rem, 10.5vw, 3.1rem); line-height: 1.04; letter-spacing: -.01em;
+  color: var(--pp-cocoa); text-shadow: none;
+}
+html body.genz .name-amp { font-family: var(--font-script); font-weight: 400; font-size: clamp(2.4rem, 10vw, 3rem); line-height: .9; color: var(--pp-berry); margin: 2px 0 -2px; }
+html body.genz #home-date {
+  font-family: var(--font-mono); font-weight: 500; font-size: clamp(1rem, 4.2vw, 1.12rem); letter-spacing: .18em; color: var(--pp-cocoa);
+  margin-top: 16px;
+}
+html body.genz #home-tagline { font-family: var(--font-display); font-style: italic; font-weight: 400; font-size: clamp(1.12rem, 4.8vw, 1.3rem); color: var(--pp-cocoa-2); margin-top: 6px; line-height: 1.3; }
+html body.genz #home-hashtag {
+  display: inline-block; font-family: var(--font-ui); font-weight: 700; font-size: clamp(.98rem, 4vw, 1.08rem); letter-spacing: .01em;
+  color: var(--pp-berry); background: var(--pp-pink-2); border: 1px solid rgba(194,90,114,.18); border-radius: 999px; padding: 7px 16px; margin-top: 12px;
+}
+html body.genz #home-venue { font-family: var(--font-ui); font-size: clamp(.95rem, 3.8vw, 1.02rem); color: var(--pp-cocoa-2); font-weight: 500; }
+html body.genz .home-quota, html body.genz #home-quota, html body.genz #quota-sub { font-family: var(--font-ui); font-weight: 600; color: var(--pp-cocoa-2); font-size: clamp(1rem, 4vw, 1.08rem); }
+html body.genz #quota-message { font-size: clamp(1.06rem, 4.2vw, 1.16rem); line-height: 1.55; color: var(--pp-cocoa); }
+html body.genz #screen-quota h1 { font-family: var(--font-display); font-style: italic; font-weight: 400; font-size: clamp(2.2rem, 9vw, 2.8rem); color: var(--pp-cocoa); }
+
+/* tombol */
+html body.genz .btn-primary {
+  border-radius: 999px; border: 0;
+  background: linear-gradient(180deg, #D46C84 0%, #BF566F 100%);
+  color: #fff; font-family: var(--font-ui); font-weight: 700; letter-spacing: .14em; text-indent: .14em;
+  font-size: clamp(1.02rem, 4.2vw, 1.12rem); min-height: 58px;
+  box-shadow: 0 1px 0 rgba(255,255,255,.35) inset, 0 14px 28px -10px rgba(194,90,114,.6), 0 4px 10px -4px rgba(120,60,75,.3);
+  transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+}
+html body.genz .btn-primary:hover { filter: brightness(1.04); transform: translateY(-1px); }
+html body.genz .btn-primary:active { transform: translateY(1px) scale(.99); box-shadow: 0 6px 14px -8px rgba(194,90,114,.6); }
+html body.genz .btn-secondary {
+  border-radius: 999px; border: 1px solid rgba(91,58,51,.16); background: rgba(255,255,255,.9); color: var(--pp-cocoa);
+  font-family: var(--font-ui); font-weight: 700; letter-spacing: .1em; text-indent: .1em;
+  box-shadow: 0 8px 20px -12px rgba(120,60,75,.35);
+}
+html body.genz .btn-secondary:hover { background: #fff; border-color: rgba(194,90,114,.35); }
+html body.genz .btn-icon { border: 1px solid rgba(91,58,51,.12); background: rgba(255,255,255,.82); color: var(--pp-cocoa); box-shadow: 0 6px 16px -8px rgba(120,60,75,.35); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+
+/* kamera */
+html body.genz #screen-camera { background: #2A1D1D; }
+html body.genz .cam-frame-overlay { inset: 12px; border: 1.5px solid rgba(255,255,255,.75); border-radius: 28px; box-shadow: 0 0 0 999px rgba(30,15,20,.14); }
+html body.genz .cam-frame-overlay::after { inset: 10px; border: 1px solid rgba(248,214,221,.45); border-radius: 22px; }
+html body.genz .cam-meta { font-family: var(--font-ui); font-weight: 600; color: #fff; background: rgba(40,24,26,.42); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,.18); border-radius: 999px; padding: 6px 14px; text-shadow: none; letter-spacing: .06em; font-size: clamp(.92rem, 3.6vw, 1rem); }
+html body.genz #btn-cam-back { color: var(--pp-cocoa) !important; background: rgba(255,255,255,.92) !important; border: 0; box-shadow: 0 8px 20px -10px rgba(0,0,0,.5); }
+html body.genz #btn-switch-cam { color: var(--pp-cocoa) !important; background: rgba(255,255,255,.92); border: 0; }
+html body.genz #countdown span {
+  font-family: var(--font-display); font-style: italic; font-weight: 400; color: #fff;
+  -webkit-text-stroke: 0; text-shadow: 0 10px 40px rgba(0,0,0,.35), 0 0 60px rgba(248,214,221,.55);
+}
+html body.genz .cam-bottom { background: linear-gradient(0deg, rgba(40,24,26,.66), transparent); }
+html body.genz .cam-error { background: var(--pp-cream); }
+html body.genz .cam-error-card { border: 1px solid var(--pp-line); border-radius: 26px; background: #fff; color: var(--pp-cocoa); box-shadow: 0 30px 60px -24px rgba(120,60,75,.35); }
+html body.genz .cam-error-card h2 { font-family: var(--font-display); font-style: italic; font-weight: 500; color: var(--pp-cocoa); letter-spacing: 0; }
+
+/* pemilih filter & bingkai */
+html body.genz .pick-tabs { border: 1px solid rgba(255,255,255,.25); background: rgba(40,24,26,.42); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: none; }
+html body.genz .pick-tabs .pt { color: rgba(255,255,255,.85); font-family: var(--font-ui); font-weight: 700; letter-spacing: .08em; font-size: .9rem; }
+html body.genz .pick-tabs .pt.on { background: #fff; color: var(--pp-cocoa); }
+html body.genz .pi { color: #fff; font-family: var(--font-ui); font-weight: 600; font-size: .84rem; }
+html body.genz .pi span { text-shadow: 0 1px 6px rgba(0,0,0,.6); }
+html body.genz .pi .th { border: 2px solid rgba(255,255,255,.55); background-color: var(--pp-pink); }
+html body.genz .pi[data-kind="frame"] .th { border-radius: 12px; }
+html body.genz .pi.on .th { border-color: #fff; box-shadow: 0 0 0 3px rgba(212,108,132,.95), 0 8px 18px rgba(0,0,0,.35); }
+html body.genz .pi.on span { color: #fff; font-weight: 800; }
+html body.genz .picker-result .pick-tabs { border: 1px solid var(--pp-line); background: #fff; }
+html body.genz .picker-result .pick-tabs .pt { color: var(--pp-cocoa-2); }
+html body.genz .picker-result .pick-tabs .pt.on { color: #fff; background: var(--pp-berry); }
+html body.genz .picker-result .pi { color: var(--pp-cocoa); }
+html body.genz .picker-result .pi span { text-shadow: none; }
+html body.genz .picker-result .pi.on span { color: var(--pp-berry); }
+html body.genz .picker-result .pi .th { border-color: rgba(91,58,51,.14); }
+html body.genz .picker-result .pi.on .th { border-color: #fff; box-shadow: 0 0 0 3px var(--pp-berry); }
+
+/* hasil */
+html body.genz #result-img { border: 0; border-radius: 16px; box-shadow: 0 30px 60px -24px rgba(120,60,75,.45), 0 8px 18px -10px rgba(120,60,75,.25); }
+html body.genz .qr-box { border: 1px solid var(--pp-line); border-radius: 22px; background: #fff; box-shadow: 0 20px 40px -24px rgba(120,60,75,.35); }
+html body.genz .qr-box .qr-cap { font-family: var(--font-ui); font-weight: 700; color: var(--pp-berry); letter-spacing: .14em; }
+html body.genz .qr-box p, html body.genz #qr-status { color: var(--pp-cocoa); font-weight: 500; }
+html body.genz .gallery-dock { background: linear-gradient(180deg, transparent, rgba(248,214,221,.9)); }
+html body.genz .gallery-label { font-family: var(--font-ui); font-weight: 700; letter-spacing: .1em; color: var(--pp-cocoa); }
+html body.genz .gallery-item { border: 2px solid #fff; border-radius: 10px; box-shadow: 0 6px 14px -8px rgba(120,60,75,.4); }
+html body.genz #discard-dialog .dd-card { border: 1px solid var(--pp-line); border-radius: 28px; background: #fff; box-shadow: 0 40px 80px -30px rgba(60,30,35,.45); color: var(--pp-cocoa); }
+html body.genz .dd-card h2 { font-family: var(--font-display); font-style: italic; font-weight: 500; color: var(--pp-cocoa); }
+@media (max-width: 480px) {
+  html body.genz .home-inner { padding: 38px 16px 22px; border-radius: 28px; }
+  html body.genz .gz-stk.strawberry { width: 54px; right: -12px; }
+  html body.genz .gz-stk.pearls { width: 52px; left: -12px; }
+  html body.genz .gz-stk.tulips { width: 70px; left: -10px; }
+}
+@media (prefers-reduced-motion: reduce) { html body.genz .gz-stk { animation: none !important; } }
+html body.genz .preview-hint { font-family: var(--font-ui); font-style: normal; font-weight: 500; font-size: clamp(1rem, 3.9vw, 1.08rem) !important; color: var(--pp-cocoa-2); line-height: 1.5; }
+html body.genz .preview-badge {
+  font-family: var(--font-ui); font-weight: 700; letter-spacing: .2em; font-size: .72rem; color: var(--pp-berry);
+  background: var(--pp-pink-2); border: 1px solid rgba(194,90,114,.2); border-radius: 999px; padding: 4px 12px; margin-bottom: 8px;
+}
