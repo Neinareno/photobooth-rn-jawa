@@ -16,7 +16,7 @@
   const FONT_LOADS = [
     "600 48px Cinzel", "700 48px Cinzel", "500 28px Cinzel",
     "500 40px 'Cormorant Garamond'", "600 40px 'Cormorant Garamond'", "italic 400 36px 'Cormorant Garamond'",
-    "400 90px 'Great Vibes'", "400 90px 'Ms Madi'",
+    "400 90px 'Great Vibes'", "400 96px 'Great Vibes'", "400 90px 'Ms Madi'",
     "500 28px 'Plus Jakarta Sans'"
   ];
   (function injectFonts() {
@@ -226,44 +226,78 @@
   }
 
   /* ---- geometry for the Theta-style invitation strip (2:3 paper) ---- */
+  /* Cream footer is 30% of the canvas so typography sits clear of the photos. */
+  function thetaGeom() {
+    const HEAD = 80, FOOT = Math.round(H * 0.30), M = 48, GAP = 16;
+    return { HEAD, FOOT, M, GAP, photoBottom: H - FOOT, side: 250, textW: 700 };
+  }
   function thetaBox(layout) {
-    const M = 44, HEAD = 92, FOOT = 500, GAP = 14;
-    return slots(layoutOf(layout), { x: M, y: HEAD, w: W - 2 * M, h: H - HEAD - FOOT }, GAP);
+    const g = thetaGeom();
+    return slots(layoutOf(layout), { x: g.M, y: g.HEAD, w: W - 2 * g.M, h: H - g.HEAD - g.FOOT }, g.GAP);
+  }
+
+  function clipThetaFloral(ctx, g) {
+    const photoW = W - 2 * g.M;
+    const cornerW = photoW * 0.15;
+    const overlapY = 112;
+    ctx.beginPath();
+    ctx.rect(0, g.photoBottom, g.side, g.FOOT);
+    ctx.rect(W - g.side, g.photoBottom, g.side, g.FOOT);
+    ctx.rect(g.M, g.photoBottom - overlapY, cornerW, overlapY);
+    ctx.rect(W - g.M - cornerW, g.photoBottom - overlapY, cornerW, overlapY);
+    ctx.clip();
   }
 
   function drawThetaDecor(ctx, pal) {
-    smear(ctx, 160, 1680, 420, pal.smear, 0.42);
-    smear(ctx, 1040, 1700, 400, pal.smear2 || pal.smear, 0.4);
-    smear(ctx, 600, 1760, 260, pal.smear, 0.18);
-    const gun = img("gunungan"), gajah = img("gajah"), fl = img("floral");
-    if (fl) {
-      const dw = W, dh = fl.height * (dw / fl.width);
-      ctx.drawImage(fl, 0, H - dh + 36, dw, dh);
+    const g = thetaGeom();
+    smear(ctx, 130, H - 70, 260, pal.smear, 0.28);
+    smear(ctx, 1070, H - 60, 240, pal.smear2 || pal.smear, 0.26);
+    smear(ctx, 600, H - 30, 180, pal.smear, 0.1);
+
+    const flL = img("floralL") || img("floral");
+    const flR = img("floralR") || img("floral");
+    const floralH = g.FOOT + 112;
+    if (flL) {
+      ctx.save();
+      clipThetaFloral(ctx, g);
+      const scale = floralH / flL.height;
+      ctx.drawImage(flL, -20, H - floralH, flL.width * scale, floralH);
+      ctx.restore();
     }
-    /* silhouettes on top of florals so they stay visible at the corners */
-    if (gun) drawContain(ctx, gun, -20, 1320, 280, 470);
-    if (gajah) drawContain(ctx, gajah, 860, 1480, 360, 310);
+    if (flR) {
+      ctx.save();
+      clipThetaFloral(ctx, g);
+      const scale = floralH / flR.height;
+      const dw = flR.width * scale;
+      ctx.drawImage(flR, W - dw + 20, H - floralH, dw, floralH);
+      ctx.restore();
+    }
+
+    const gun = img("gunungan"), gajah = img("gajah");
+    /* Silhouettes stay in the footer sides, clear of the centered type column. */
+    if (gun) drawContain(ctx, gun, -8, g.photoBottom + 16, 248, g.FOOT - 20);
+    if (gajah) drawContain(ctx, gajah, W - 268, g.photoBottom + 70, 280, g.FOOT - 86);
   }
 
   function drawThetaType(ctx, T, pal) {
-    /* top header */
-    txt(ctx, T.mono, 600, 58, { fn: F.cinzel(600), size: 22, track: 10, color: pal.header, max: 900 });
-    /* bottom typography */
-    let y = 1388;
-    txt(ctx, T.heading || "THE WEDDING OF", 600, y, { fn: F.cinzel(600), size: 22, track: 8, color: pal.ink, max: 920 });
-    y += 78;
-    txt(ctx, T.a, 600, y, { fn: F.script(), size: 78, color: pal.ink, max: 980, min: 44 });
-    y += 52;
-    txt(ctx, "&", 600, y, { fn: F.script(), size: 48, color: pal.inkSoft, max: 200 });
-    y += 70;
-    if (T.b) txt(ctx, T.b, 600, y, { fn: F.script(), size: 78, color: pal.ink, max: 980, min: 44 });
-    y += 56;
-    txt(ctx, T.dotsSpaced || T.dots, 600, y, { fn: F.serif(500), size: 26, track: 6, color: pal.ink, max: 800 });
-    y += 36;
+    const g = thetaGeom();
+    txt(ctx, T.mono, 600, 52, { fn: F.cinzel(600), size: 24, track: 12, color: pal.header, max: 900 });
+
+    const max = g.textW;
+    let y = g.photoBottom + 72;
+    txt(ctx, T.heading || "THE WEDDING OF", 600, y, { fn: F.cinzel(600), size: 28, track: 10, color: pal.ink, max: max });
+    y += 86;
+    txt(ctx, T.a, 600, y, { fn: F.script(), size: 92, color: pal.ink, max: max, min: 52 });
+    y += 58;
+    txt(ctx, "&", 600, y, { fn: F.script(), size: 52, color: pal.inkSoft, max: 200 });
+    y += 80;
+    if (T.b) txt(ctx, T.b, 600, y, { fn: F.script(), size: 92, color: pal.ink, max: max, min: 52 });
+    y += 68;
+    txt(ctx, T.dotsSpaced || T.dots, 600, y, { fn: F.serif(500), size: 36, track: 8, color: pal.ink, max: max });
+    y += 48;
     if (T.reception) {
-      txt(ctx, T.reception.replace(/\s*WIB\s*-\s*/g, "–").replace(/\s*WIB\s*$/, " WIB"), 600, y, {
-        fn: F.serif(500, true), size: 18, track: 1, color: pal.inkSoft, max: 980
-      });
+      const rec = T.reception.replace(/\s*WIB\s*-\s*/g, "–").replace(/\s*WIB\s*$/, " WIB");
+      txt(ctx, rec, 600, y, { fn: F.serif(500, true), size: 26, track: 0.5, color: pal.ink, max: max, min: 18 });
     }
   }
 
@@ -279,16 +313,8 @@
       },
       fg: function (ctx, layout, texts) {
         const T = textsOf(texts);
-        /* typography first, then decor so florals/gunungan overlap the lower photo and type sides */
-        drawThetaType(ctx, T, pal);
         drawThetaDecor(ctx, pal);
-        /* redraw type on top of florals only in the center band so names stay readable */
-        ctx.save();
-        ctx.beginPath();
-        ctx.rect(220, 1320, 760, 460);
-        ctx.clip();
         drawThetaType(ctx, T, pal);
-        ctx.restore();
       }
     };
   }

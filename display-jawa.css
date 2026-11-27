@@ -1,29 +1,282 @@
-/* Display TV — tema Jawa peach/rose/brown */
+/* Layar display — tema Jawa undangan (menggantikan krom Gen Z) */
 :root {
   --jw-peach: #F3DCD0;
   --jw-cream: #F8EEE6;
+  --jw-paper: #F6EFE6;
   --jw-rose: #D9A5A0;
   --jw-mauve: #8B4F4A;
+  --jw-ink: #6B3A36;
   --jw-brown: #8B5A44;
+  --jw-gold: #C4A27A;
   --jw-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --font-display: "Cormorant Garamond", "Times New Roman", serif;
+  --font-script: "Great Vibes", "Ms Madi", cursive;
+  --font-ui: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "Cormorant Garamond", serif;
+  --cocoa: #6B3A36;
+  --cocoa-2: #8B5A44;
+  --berry: #8B4F4A;
+  --pink-2: #F3DCD0;
 }
-html, body { background: #F3DCD0 !important; color: #6B3A36; }
-#bg { background: #F3DCD0; }
-#bg .blob { background: #D9A5A0 !important; opacity: 0.25; filter: blur(60px); }
-.bg-layer { transition: opacity 0.8s cubic-bezier(0.4,0,0.2,1); }
-.brand.glass, .counter.glass, .empty-frame.glass, .qr {
-  background: rgba(248,238,230,0.86) !important;
-  border: 1px solid rgba(139,90,68,0.2) !important;
-  box-shadow: 0 16px 40px -24px rgba(80,40,30,0.35);
+
+html, body {
+  background: #F3DCD0 !important;
+  color: var(--jw-ink);
 }
-.heading, .date { font-family: Cinzel, "Cormorant Garamond", serif !important; letter-spacing: 0.22em; color: #8B4F4A !important; text-transform: uppercase; }
-.names .n { font-family: "Great Vibes", "Ms Madi", cursive !important; color: #8B4F4A !important; }
-.names .amp { font-family: "Great Vibes", cursive !important; color: #A56A64 !important; }
-.tagline, .hashtag, .place, .time, .venue { font-family: "Cormorant Garamond", serif; color: #8B5A44; }
-.place { font-family: Cinzel, serif; letter-spacing: 0.18em; font-size: 0.85rem; margin-top: 8px; }
-.time, .venue { font-size: 0.9rem; }
-#newbanner, #flashlayer { background: rgba(248,238,230,0.9); color: #8B4F4A; }
-.dl { background: rgba(248,238,230,0.94) !important; color: #6B3A36; border-color: rgba(139,90,68,0.25); }
+
+/* Hide leftover Gen Z chrome */
+.floaters, .brand .bow, #sparkles, #confetti,
+.qr::before, .dl::before, .card::before, .stk { display: none !important; }
+
+#bg {
+  background:
+    linear-gradient(180deg, rgba(243, 220, 208, 0.88), rgba(246, 239, 230, 0.92)),
+    url("assets/paper-texture.jpg") center / cover no-repeat,
+    #F3DCD0;
+}
+#bg .blob { display: none; }
+#bg::after { display: none !important; }
+.bg-layer { transition: opacity 0.8s var(--jw-ease); }
+
+.jw-decor { position: fixed; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
+.jw-paper { position: absolute; inset: 0; opacity: 0.18;
+  background: url("assets/paper-texture.jpg") center / cover no-repeat; mix-blend-mode: multiply; }
+.jw-wayang { position: absolute; bottom: -2vh; height: min(42vh, 52vw); opacity: 0.18; filter: sepia(0.35); }
+.jw-wayang.left { left: -1.5vw; }
+.jw-wayang.right { right: -1.5vw; }
+.jw-floral { position: absolute; width: min(22vw, 28vh); opacity: 0.55; }
+.jw-floral.left { left: 0; bottom: 0; }
+.jw-floral.right { right: 0; bottom: 0; }
+
+.brand.glass, .counter.glass, .empty-frame.glass, .qr, .dl, #status, #hint, .ctl {
+  background: rgba(248, 238, 230, 0.9) !important;
+  border: 1px solid rgba(139, 79, 74, 0.22) !important;
+  box-shadow: 0 18px 44px -24px rgba(80, 40, 30, 0.4);
+  border-radius: 0.6vh;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.brand { position: relative; text-align: center; }
+.brand .mono {
+  font-family: Cinzel, "Cormorant Garamond", serif;
+  font-weight: 600;
+  font-size: 1.6vh;
+  letter-spacing: 0.42em;
+  text-indent: 0.42em;
+  color: var(--jw-mauve);
+  margin-bottom: 1.6vh;
+}
+.heading, .date {
+  font-family: Cinzel, "Cormorant Garamond", serif !important;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-indent: 0.22em;
+  color: var(--jw-mauve) !important;
+  text-transform: uppercase;
+}
+.heading { font-size: 1.35vh; }
+.names { margin-top: 1.2vh; }
+.names .n {
+  font-family: "Great Vibes", "Ms Madi", cursive !important;
+  font-style: normal;
+  color: var(--jw-mauve) !important;
+  display: block;
+  font-size: clamp(2rem, 5.2vh, 5.6rem);
+  line-height: 1.05;
+}
+.names .amp {
+  display: block;
+  font-family: "Great Vibes", cursive !important;
+  font-style: normal;
+  color: #A56A64 !important;
+  font-size: clamp(1.6rem, 4.2vh, 4.4rem);
+  line-height: 0.9;
+  margin: 0.2vh 0;
+}
+.date { margin-top: 1.8vh; font-size: 2vh; }
+.tagline, .time, .venue {
+  font-family: "Cormorant Garamond", serif !important;
+  font-style: italic;
+  color: var(--jw-brown) !important;
+}
+.tagline { margin-top: 0.8vh; font-size: 2vh; }
+.hashtag {
+  display: inline-block;
+  margin-top: 1.4vh;
+  font-family: Cinzel, serif !important;
+  font-weight: 600;
+  font-size: 1.5vh;
+  letter-spacing: 0.12em;
+  color: var(--jw-mauve) !important;
+  background: transparent !important;
+  border: 1px solid rgba(139, 79, 74, 0.28);
+  border-radius: 0;
+  padding: 0.5vh 1.2vw;
+}
+.place {
+  font-family: Cinzel, serif !important;
+  letter-spacing: 0.18em;
+  text-indent: 0.18em;
+  font-size: 1.5vh;
+  margin-top: 1.4vh;
+  color: var(--jw-mauve);
+}
+.time, .venue { font-size: 1.55vh; margin-top: 0.4vh; }
+
+.qr { border-radius: 0.6vh !important; background: rgba(248, 238, 230, 0.94) !important; }
+.qr canvas { border-radius: 0; border: 1px solid rgba(139, 79, 74, 0.15); }
+.qr .qt b {
+  font-family: Cinzel, serif !important;
+  font-style: normal !important;
+  font-weight: 600;
+  font-size: 1.8vh;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--jw-mauve) !important;
+  white-space: normal;
+}
+.qr .qt span {
+  font-family: "Cormorant Garamond", serif;
+  font-style: italic;
+  font-weight: 500;
+  color: var(--jw-brown) !important;
+}
+
+.counter { border-radius: 0.6vh !important; }
+.counter .heart {
+  width: 5.2vh; height: 5.2vh; border-radius: 0;
+  background: transparent !important;
+  border: 1px solid rgba(139, 79, 74, 0.3);
+  animation: none !important;
+}
+.counter .heart::before {
+  content: "R&N";
+  font-family: Cinzel, serif;
+  font-size: 1.3vh;
+  letter-spacing: 0.08em;
+  color: var(--jw-mauve);
+}
+#count-num {
+  font-family: Cinzel, serif !important;
+  font-weight: 600;
+  color: var(--jw-mauve) !important;
+}
+.counter .lbl {
+  font-family: "Cormorant Garamond", serif;
+  font-weight: 600;
+  font-style: italic;
+  color: var(--jw-ink) !important;
+}
+.counter .lbl small { font-style: normal; letter-spacing: 0.1em; text-transform: uppercase; font-size: 1.2vh; }
+
+.card {
+  background: #F8EEE6 !important;
+  border: 1px solid rgba(139, 79, 74, 0.18);
+  border-radius: 0.3vh !important;
+  box-shadow: 0 3vh 6vh -3vh rgba(80, 40, 30, 0.45);
+}
+.ph { background: #E8D5C8 !important; border-radius: 0 !important; }
+.caption .ctext {
+  font-family: "Cormorant Garamond", serif !important;
+  font-style: italic;
+  color: var(--jw-ink) !important;
+}
+.card > .badge {
+  font-family: Cinzel, serif !important;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  background: var(--jw-mauve) !important;
+  color: #F8EEE6 !important;
+  border-radius: 0;
+  transform: none;
+}
+.slide.is-new .card { animation: jwGlow 2.4s 1s ease-in-out 3; }
+@keyframes jwGlow {
+  0%, 100% { box-shadow: 0 3vh 6vh -3vh rgba(80, 40, 30, 0.45); }
+  50% { box-shadow: 0 3vh 6vh -3vh rgba(80, 40, 30, 0.45), 0 0 0 1vh rgba(196, 162, 122, 0.45); }
+}
+
+.empty-frame { text-align: center; padding: 4vh 3vw; max-width: 46vw; }
+.empty-frame .emo {
+  width: 9vh; height: 9vh; margin: 0 auto 2vh;
+  background: url("assets/gunungan.webp") center / contain no-repeat;
+}
+.empty-frame h2 {
+  font-family: "Great Vibes", cursive !important;
+  font-weight: 400;
+  font-size: 6vh;
+  color: var(--jw-mauve);
+}
+.empty-frame p {
+  font-family: "Cormorant Garamond", serif;
+  font-style: italic;
+  font-size: 2.4vh;
+  color: var(--jw-brown);
+}
+
+.recent h3 {
+  font-family: Cinzel, serif !important;
+  letter-spacing: 0.22em;
+  color: var(--jw-mauve);
+}
+.th { border-radius: 0.3vh; border: 1px solid rgba(139, 79, 74, 0.2); }
+
+.dl {
+  border-radius: 0.6vh !important;
+  color: var(--jw-ink);
+}
+.dl b {
+  font-family: Cinzel, serif !important;
+  font-style: normal !important;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 1.5vh !important;
+  color: var(--jw-mauve) !important;
+  white-space: normal;
+}
+.dl span {
+  font-family: "Cormorant Garamond", serif;
+  font-style: italic;
+  font-weight: 500 !important;
+  color: var(--jw-brown) !important;
+}
+
+#newbanner, #flashlayer {
+  background: rgba(248, 238, 230, 0.94) !important;
+  color: var(--jw-mauve) !important;
+  border: 1px solid rgba(139, 79, 74, 0.22);
+  border-radius: 0.4vh;
+  box-shadow: 0 16px 40px -20px rgba(80, 40, 30, 0.4);
+}
+#newbanner .t1 {
+  font-family: "Great Vibes", cursive !important;
+  font-style: normal;
+  letter-spacing: 0;
+}
+#newbanner .t2 {
+  font-family: "Cormorant Garamond", serif;
+  font-style: italic;
+}
+
+.ctl { border-radius: 50% !important; color: var(--jw-mauve) !important; }
+#status, #hint {
+  font-family: "Cormorant Garamond", serif;
+  font-style: italic;
+  color: var(--jw-brown) !important;
+  border-radius: 999px !important;
+}
+#status i { background: #C4A27A; }
+#status.live i { background: #7A9A6A; }
+
+@media (orientation: portrait) {
+  .jw-wayang { height: 28vh; opacity: 0.12; }
+  .jw-floral { width: 28vw; }
+  .names .n, .names .amp { display: inline; }
+  .names .amp { margin: 0 0.25em; }
+  .brand .mono { margin-bottom: 0.8vh; font-size: 1.2vh; }
+}
 @media (prefers-reduced-motion: reduce) {
-  .bg-layer, .slide, .floaters img, #bg .blob { animation: none !important; transition: none !important; }
+  .bg-layer, .slide, #bg .blob { animation: none !important; transition: none !important; }
 }

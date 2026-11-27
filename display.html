@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#F3DCD0" />
+  <link rel="icon" href="favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" href="favicon.png" />
   <meta name="robots" content="noindex" />
   <title>Layar Display · Ratna Prastyani &amp; Nuryadi</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -15,21 +17,23 @@
   <script src="qrcode.min.js"></script>
 </head>
 <body class="is-empty">
-  <div id="bg"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="blob b4"></div><div class="blob b5"></div><div class="bg-layer" id="bgA"></div><div class="bg-layer" id="bgB"></div></div>
-  <canvas id="sparkles"></canvas>
-  <div class="floaters" aria-hidden="true">
-    <img src="stickers/heart-pink.webp" alt="" style="left:30.5%;top:5%;--w:6vh;--d:8s;--dx:.8vw;--dy:-2vh" />
-    <img src="stickers/butterfly.webp" alt="" style="left:31%;bottom:8%;--w:8vh;--d:10s;--dl:-3s;--dx:1.4vw;--dy:-3vh;--r0:-14deg;--r1:10deg" />
-    <img src="stickers/sparkle-blue.webp" alt="" style="right:14.5%;top:7%;--w:5.4vh;--d:7s;--dl:-2s" />
-    <img src="stickers/bow-lilac.webp" alt="" style="right:14%;bottom:6%;--w:8vh;--d:11s;--dl:-5s;--dx:-1vw" />
-    <img src="stickers/heart-lilac.webp" alt="" style="right:2%;top:46%;--w:5.4vh;--d:8.5s;--dl:-4s;--dx:-.6vw" />
-    <img src="stickers/star-silver.webp" alt="" style="left:1.5%;top:3%;--w:5vh;--d:9.5s;--dl:-6s" />
+  <div id="bg">
+    <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+    <div class="bg-layer" id="bgA"></div><div class="bg-layer" id="bgB"></div>
   </div>
+  <div class="jw-decor" aria-hidden="true">
+    <div class="jw-paper"></div>
+    <img class="jw-wayang left" src="assets/wayang-pria.webp" alt="" />
+    <img class="jw-wayang right" src="assets/wayang-wanita.webp" alt="" />
+    <img class="jw-floral left" src="assets/floral-left.webp" alt="" />
+    <img class="jw-floral right" src="assets/floral-right.webp" alt="" />
+  </div>
+  <canvas id="sparkles" hidden></canvas>
 
   <div id="app">
     <aside class="side">
       <div class="brand glass">
-        <img class="bow" src="stickers/bow-pink.webp" alt="" aria-hidden="true" />
+        <div class="mono">R  &amp;  N</div>
         <div class="heading">THE WEDDING OF</div>
         <div class="names"><span class="n">Ratna Prastyani</span><span class="amp">&amp;</span><span class="n">Nuryadi</span></div>
         <div class="date">29 . 01 . 2027</div>
@@ -41,12 +45,12 @@
       </div>
       <div class="qr" id="qr">
         <canvas id="qr-canvas" width="240" height="240" aria-label="Kode QR photobooth"></canvas>
-        <div class="qt"><b>Scan &amp; foto yuk! 📸</b><span>Arahkan kamera HP ke kode ini, pilih bingkai favoritmu, lalu tekan Simpan.</span></div>
+        <div class="qt"><b>Pindai untuk berfoto</b><span>Arahkan kamera HP ke kode ini, pilih bingkai, lalu tekan Simpan.</span></div>
       </div>
       <div class="counter glass" id="count">
-        <div class="heart">💗</div>
+        <div class="heart" aria-hidden="true"></div>
         <div><span id="count-num">0</span></div>
-        <div class="lbl">kenangan tersimpan<small><i></i>LIVE dari photobooth</small></div>
+        <div class="lbl">Kenangan tersimpan<small><i></i>Langsung dari photobooth</small></div>
       </div>
     </aside>
 
@@ -54,20 +58,20 @@
       <div class="slide" id="slideA"><div class="kb"><div class="card">
         <div class="ph"><img alt="Foto tamu" decoding="async" /></div>
         <div class="shine"></div>
-        <span class="badge">BARU ✨</span>
+        <span class="badge">BARU</span>
         <div class="caption"><span class="ctext"></span></div>
       </div></div></div>
       <div class="slide" id="slideB"></div>
       <div class="dl" id="dl" aria-label="Kode QR galeri tamu untuk mengunduh foto yang sedang tampil">
         <div class="dl-qr"><canvas id="dl-canvas" width="330" height="330"></canvas></div>
-        <b>Scan &amp; download fotomu ⬇️</b>
-        <span>foto ini langsung terpilih ✨</span>
+        <b>Pindai untuk mengunduh foto ini</b>
+        <span>Foto yang sedang tampil akan langsung terpilih</span>
       </div>
       <div id="empty">
         <div class="empty-frame glass">
-          <div class="emo">📸</div>
-          <h2>Belum ada foto nih!</h2>
-          <p>Jadilah yang pertama — scan kode QR, berfoto di photobooth, lalu tekan Simpan. Fotomu langsung tampil di sini ✨</p>
+          <div class="emo" aria-hidden="true"></div>
+          <h2>Belum ada foto</h2>
+          <p>Pindai kode QR, berfoto di photobooth, lalu tekan Simpan. Hasilnya akan tampil di layar ini.</p>
         </div>
       </div>
     </main>
@@ -79,8 +83,8 @@
   </div>
 
   <div id="flashlayer"></div>
-  <div id="newbanner" aria-live="polite"><div class="t1">Foto baru! 📸</div><div class="t2">baru saja diabadikan ✨</div></div>
-  <canvas id="confetti"></canvas>
+  <div id="newbanner" aria-live="polite"><div class="t1">Foto baru</div><div class="t2">Baru saja diabadikan</div></div>
+  <canvas id="confetti" hidden></canvas>
 
   <div class="controls">
     <button type="button" class="ctl" id="btn-next" title="Foto berikutnya (→)" aria-label="Foto berikutnya">
