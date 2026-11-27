@@ -39,10 +39,11 @@ Buka sekali di HP pelaminan; mode tersimpan di HP itu. Kembali ke mode tamu: `ht
 ## 2. Alur untuk tamu
 
 1. Beranda membuka dengan tirai batik, lalu pemandangan joglo, wayang, dan bunga. Tekan **MULAI FOTO**.
-2. Pilih filter dan bingkai. Hitung mundur 3–2–1, foto diambil otomatis (2 lembar untuk tata letak bawaan; 1 / 3 / 4 jika diubah di admin).
-3. Di pratinjau, filter/bingkai masih bisa diganti. Tekan **SIMPAN FOTO** atau **BATAL / ULANGI**.
-4. Setelah tersimpan: **UNDUH** (PNG 1200×1800), **CETAK**, **FOTO LAGI**, atau **BERANDA**.
-5. Setiap perangkat tamu dibatasi **8 sesi foto**. Mode pelaminan tidak terbatas.
+2. Pilih **1 foto**, **2 foto**, atau **3 foto**, lalu pilih filter dan bingkai. Tekan **MULAI FOTO**.
+3. Setelah hitungan 3–2–1, hasil foto itu tampil dulu. Tamu bisa **Ulangi foto ini** atau menekan **Foto ke-2** / **Foto ke-3** (hitungan mundur dimulai lagi). Setelah foto terakhir, tekan **Lihat hasil**.
+4. Di pratinjau akhir, filter/bingkai masih bisa diganti. Tekan **SIMPAN FOTO** atau **BATAL / ULANGI**.
+5. Setelah tersimpan: **UNDUH** (PNG 1200×1800), **CETAK**, **FOTO LAGI**, atau **BERANDA**.
+6. Setiap perangkat tamu dibatasi **8 sesi foto**. Mode pelaminan tidak terbatas.
 
 ---
 

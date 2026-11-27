@@ -289,16 +289,54 @@
     #screen-camera { background: #0a0705; padding: 0; }
     .cam-wrap { position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; }
     .cam-stage { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #000; }
-    #cam-video { width: 100%; height: 100%; object-fit: cover; transform: none; }
+    #cam-viewfinder {
+      position: relative;
+      overflow: hidden;
+      background: #111;
+      flex: 0 0 auto;
+      box-shadow: 0 0 0 999px rgba(0,0,0,0.35);
+    }
+    #cam-video, #cam-canvas {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      object-position: center center;
+      transform-origin: center center;
+      transform: none;
+    }
     #cam-video.mirror, #cam-canvas.mirror { transform: scaleX(-1); }
-    #cam-canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: none; }
+    #cam-canvas { display: none; }
     .cam-frame-overlay {
-      position: absolute; inset: 10px;
+      position: absolute; inset: 0;
       border: 1px solid rgba(212,175,55,0.75);
       pointer-events: none;
-      box-shadow: 0 0 0 999px rgba(0,0,0,0.18);
     }
     .cam-frame-overlay::after { content: ""; position: absolute; inset: 6px; border: 1px solid rgba(240,215,140,0.45); }
+    .layout-row {
+      display: flex; justify-content: center; gap: 8px; width: 100%; flex-wrap: wrap;
+    }
+    .layout-row button {
+      font-family: var(--font-ui); font-size: 0.82rem; letter-spacing: 0.08em; font-weight: 600;
+      text-transform: uppercase; color: #F0D78C; background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(240,215,140,0.4); padding: 8px 14px; min-height: 40px; cursor: pointer;
+    }
+    .layout-row button.on { background: rgba(139,79,74,0.9); border-color: #F0D78C; color: #F8EEE6; }
+    #shot-review {
+      position: absolute; inset: 0; z-index: 7; display: none;
+      flex-direction: column; align-items: center; justify-content: flex-end;
+      background: rgba(10,6,4,0.55);
+    }
+    #shot-review.show { display: flex !important; }
+    #shot-review img {
+      position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000;
+    }
+    #shot-review .shot-review-actions {
+      position: relative; z-index: 1; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+      width: 100%; padding: 16px 16px calc(16px + var(--safe-b, 0px));
+      background: linear-gradient(0deg, rgba(20,10,8,0.88), rgba(20,10,8,0.2) 80%, transparent);
+    }
+    #shot-review .shot-review-actions .btn-primary,
+    #shot-review .shot-review-actions .btn-secondary { min-width: 140px; }
     .cam-topbar, .cam-bottom {
       position: absolute; left: 0; right: 0; z-index: 5;
       display: flex; align-items: center; padding: 12px 16px;
@@ -664,9 +702,11 @@
   <div id="screen-camera" class="screen">
     <div class="cam-wrap">
       <div class="cam-stage">
-        <video id="cam-video" autoplay playsinline muted></video>
-        <canvas id="cam-canvas" aria-label="Pratinjau kamera dengan filter"></canvas>
-        <div class="cam-frame-overlay"></div>
+        <div id="cam-viewfinder">
+          <video id="cam-video" autoplay playsinline muted></video>
+          <canvas id="cam-canvas" aria-label="Pratinjau kamera dengan filter"></canvas>
+          <div class="cam-frame-overlay"></div>
+        </div>
         <div id="countdown"><span></span></div>
         <div id="flash"></div>
         <div class="cam-error" id="cam-error">
@@ -682,7 +722,7 @@
       </div>
       <div class="cam-topbar">
         <button type="button" class="btn-secondary" id="btn-cam-back" style="min-width:auto;min-height:48px;padding:8px 16px;color:#F0D78C;background:rgba(0,0,0,0.35);">KEMBALI</button>
-        <div class="cam-meta" id="cam-meta">1 foto</div>
+        <div class="cam-meta" id="cam-meta">Strip 2 foto</div>
         <button type="button" class="btn-icon" id="btn-switch-cam" title="Ganti ke kamera belakang" aria-label="Ganti kamera depan atau belakang" style="width:48px;height:48px;min-width:48px;color:#F0D78C;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
             <path d="M20 5v4h-4"/><path d="M4 19v-4h4"/>
@@ -693,6 +733,11 @@
         </button>
       </div>
       <div class="cam-bottom">
+        <div class="layout-row" id="cam-layouts" role="listbox" aria-label="Pilih jumlah foto">
+          <button type="button" data-layout="single">1 foto</button>
+          <button type="button" data-layout="strip2">2 foto</button>
+          <button type="button" data-layout="strip3">3 foto</button>
+        </div>
         <div class="picker" id="cam-picker" data-ctx="cam">
           <div class="pick-tabs" role="tablist">
             <button type="button" role="tab" class="pt on" data-tab="filter">FILTER</button>
@@ -702,6 +747,13 @@
           <div class="pick-row" data-row="frame" role="listbox" aria-label="Pilih bingkai" hidden></div>
         </div>
         <button type="button" class="btn-primary" id="btn-shutter">MULAI FOTO</button>
+      </div>
+      <div id="shot-review" hidden>
+        <img id="shot-review-img" alt="Hasil foto tadi" />
+        <div class="shot-review-actions">
+          <button type="button" class="btn-secondary" id="btn-retake">Ulangi foto ini</button>
+          <button type="button" class="btn-primary" id="btn-next-shot">Foto ke-2</button>
+        </div>
       </div>
     </div>
   </div>
@@ -912,7 +964,10 @@ let saving = false;
 let logoImg = { olive: null, cream: null, custom: null };
 let overlayImg = null;
 const LS_GUEST = "photobooth-rnjawa-guest-choice-v1";
-let guestFrame = "", guestFilter = "";
+let guestFrame = "", guestFilter = "", guestLayout = "";
+const GUEST_LAYOUTS = ["single", "strip2", "strip3"];
+let viewfinderRO = null;
+let shotReviewWait = null;
 let live = null;               // pratinjau WebGL live
 let filterThumbs = {};         // dataURL thumbnail tiap filter
 let pickerTab = { cam: "filter", res: "frame" };
@@ -1094,7 +1149,7 @@ function renderHome() {
   const el = $("home-logo");
   const want = logoImg.custom ? logoImg.custom.src : staticLogoSrc();
   if (el.getAttribute("src") !== want) el.src = want;
-  $("cam-meta").textContent = (LAYOUTS[settings.layout] || LAYOUTS.single).label;
+  $("cam-meta").textContent = (LAYOUTS[currentLayout()] || LAYOUTS.single).label;
   updateQuotaUI();
 }
 
@@ -1112,7 +1167,7 @@ async function prepareAssets() {
   try { await document.fonts.ready; } catch (e) {}
   const wait = ["600 30px Cinzel", "italic 500 30px 'Cormorant Garamond'", "70px Parisienne", "600 18px Jost", "400 18px Jost"];
   await Promise.all(wait.map((f) => document.fonts.load(f).catch(() => {})));
-  if (window.PBFrames) { await PBFrames.ready(); PBFrames.warm([settings.layout || "single"]); }
+  if (window.PBFrames) { await PBFrames.ready(); PBFrames.warm(["single", "strip2", "strip3"]); }
   logoImg.olive = await loadImage(LOGO_TRANS).catch(() => null);
   logoImg.cream = await loadImage(LOGO_KREM).catch(() => null);
   logoImg.gold = await loadImage(LOGO_EMAS).catch(() => null);
@@ -1612,6 +1667,64 @@ function showCamError(msg) {
 
 function hideCamError() { $("cam-error").classList.remove("show"); }
 
+function currentLayout() {
+  const id = guestLayout || settings.layout || "strip2";
+  return LAYOUTS[id] ? id : "strip2";
+}
+function slotAspect() {
+  try {
+    if (window.PBFrames && PBFrames.geometry) {
+      const g = PBFrames.geometry(PBFrames.byId(currentFrame()), currentLayout());
+      const s = g && g.slots && g.slots[0];
+      if (s && s.w && s.h) return s.w / s.h;
+    }
+  } catch (e) {}
+  const map = { single: 1104 / 1180, strip2: 1104 / 582, strip3: 1104 / 382, grid4: 544 / 582 };
+  return map[currentLayout()] || (1104 / 582);
+}
+function layoutViewfinder() {
+  const stage = document.querySelector(".cam-stage");
+  const vf = $("cam-viewfinder");
+  if (!stage || !vf) return;
+  const ar = slotAspect();
+  const W = stage.clientWidth, H = stage.clientHeight;
+  if (!W || !H) return;
+  let w, h;
+  if (W / H > ar) { h = H; w = h * ar; } else { w = W; h = w / ar; }
+  vf.style.width = Math.max(1, Math.round(w)) + "px";
+  vf.style.height = Math.max(1, Math.round(h)) + "px";
+  if (live && typeof live.resize === "function") live.resize();
+}
+function ensureViewfinderObserver() {
+  const stage = document.querySelector(".cam-stage");
+  if (!stage || viewfinderRO) return;
+  if (typeof ResizeObserver !== "undefined") {
+    viewfinderRO = new ResizeObserver(() => layoutViewfinder());
+    viewfinderRO.observe(stage);
+  } else {
+    window.addEventListener("resize", layoutViewfinder);
+  }
+}
+function renderLayoutPicks() {
+  const row = $("cam-layouts");
+  if (!row) return;
+  const cur = currentLayout();
+  row.querySelectorAll("[data-layout]").forEach((b) => {
+    b.classList.toggle("on", b.dataset.layout === cur);
+    b.setAttribute("aria-selected", b.dataset.layout === cur ? "true" : "false");
+  });
+}
+function setGuestLayout(id) {
+  if (!GUEST_LAYOUTS.includes(id)) return;
+  guestLayout = id;
+  saveGuestChoice();
+  renderLayoutPicks();
+  $("cam-meta").textContent = (LAYOUTS[currentLayout()] || LAYOUTS.strip2).label;
+  layoutViewfinder();
+  if (window.PBFrames) PBFrames.warm([currentLayout()]);
+  renderPickers();
+}
+
 function applyVideoMirror() {
   const v = $("cam-video");
   if (!v) return;
@@ -1762,13 +1875,20 @@ async function goCamera() {
   showScreen("screen-camera");
   pickerTab.cam = pickerTab.cam || "filter";
   renderPickers();
-  $("cam-meta").textContent = (LAYOUTS[settings.layout] || LAYOUTS.single).label;
+  renderLayoutPicks();
+  $("cam-meta").textContent = (LAYOUTS[currentLayout()] || LAYOUTS.single).label;
+  ensureViewfinderObserver();
+  layoutViewfinder();
   const currentId = devices[deviceIndex] && devices[deviceIndex].deviceId;
   await startCamera(currentId ? { deviceId: currentId } : { facingMode: facingMode || "user" });
 }
 
 function goHome() {
   shooting = false;
+  if (shotReviewWait && shotReviewWait.resolve) {
+    try { shotReviewWait.resolve("cancel"); } catch (e) {}
+  }
+  hideShotReview();
   stopCamera();
   if (isQuotaExhausted()) showQuotaScreen();
   else showScreen("screen-home");
@@ -1778,19 +1898,25 @@ function goHome() {
 
 function captureFrame() {
   const video = $("cam-video");
-  const vw = video.videoWidth || 1280, vh = video.videoHeight || 720;
-  // batasi sisi panjang 1600 px: cukup tajam untuk cetak 1200×1800 & ringan di HP
-  const k = Math.min(1, 1600 / Math.max(vw, vh));
-  const w = Math.round(vw * k), h = Math.round(vh * k);
+  const vf = $("cam-viewfinder");
+  const ar = (vf && vf.clientWidth && vf.clientHeight)
+    ? vf.clientWidth / vf.clientHeight
+    : slotAspect();
+  const maxLong = 1600;
+  let w, h;
+  if (ar >= 1) { w = maxLong; h = Math.max(1, Math.round(maxLong / ar)); }
+  else { h = maxLong; w = Math.max(1, Math.round(maxLong * ar)); }
+  if (window.PBFilters && PBFilters.coverToCanvas) {
+    return PBFilters.coverToCanvas(video, w, h, !!usingFrontCamera);
+  }
   const c = document.createElement("canvas");
   c.width = w; c.height = h;
   const cx = c.getContext("2d");
-  // Mirror the captured frame only for the front camera, to match the preview.
-  if (usingFrontCamera) {
-    cx.translate(w, 0);
-    cx.scale(-1, 1);
-  }
-  cx.drawImage(video, 0, 0, w, h);
+  if (usingFrontCamera) { cx.translate(w, 0); cx.scale(-1, 1); }
+  const vw = video.videoWidth || w, vh = video.videoHeight || h;
+  const scale = Math.max(w / vw, h / vh);
+  const tw = vw * scale, th = vh * scale;
+  cx.drawImage(video, (w - tw) / 2, (h - th) / 2, tw, th);
   return c;
 }
 
@@ -1812,7 +1938,7 @@ function currentFilter() {
 function loadGuestChoice() {
   try {
     const g = JSON.parse(sessionStorage.getItem(LS_GUEST) || "{}");
-    guestFrame = g.frame || ""; guestFilter = g.filter || "";
+    guestFrame = g.frame || ""; guestFilter = g.filter || ""; guestLayout = GUEST_LAYOUTS.includes(g.layout) ? g.layout : "";
   } catch (e) {}
 }
 function saveGuestChoice() {
@@ -1830,6 +1956,8 @@ function startLive() {
   try {
     const v = $("cam-video"), c = $("cam-canvas");
     if (!window.PBFilters) return;
+    ensureViewfinderObserver();
+    layoutViewfinder();
     if (!live) live = PBFilters.createLivePreview(v, c, { filter: currentFilter(), maxLong: 960 });
     live.setFilter(currentFilter());
     live.start();
@@ -1884,7 +2012,7 @@ function renderPickers() {
       const it = pickerItem("frame", f.id, f.name, f.id === bsel, "");
       it.querySelector(".th").style.background = f.thumbBg;
       rowB.appendChild(it);
-      PBFrames.thumbnail(f.id, settings.layout || "single", frameTexts(), 120, logoImg.custom).then((url) => {
+      PBFrames.thumbnail(f.id, currentLayout(), frameTexts(), 120, logoImg.custom).then((url) => {
         const th = it.querySelector(".th");
         if (th && !th.firstChild) { const im = document.createElement("img"); im.alt = ""; im.src = url; th.appendChild(im); }
       }).catch(() => {});
@@ -1949,13 +2077,44 @@ async function countdown() {
   const wrap = $("countdown");
   const span = wrap.querySelector("span");
   wrap.classList.add("show");
+  const step = (window.__pbFast || /(?:\?|&)e2e=1(?:&|$)/.test(location.search)) ? 80 : 900;
   for (let n = 3; n >= 1; n--) {
     span.textContent = String(n);
-    await sleep(900);
+    await sleep(step);
   }
   wrap.classList.remove("show");
 }
 
+function hideShotReview() {
+  const el = $("shot-review");
+  if (el) { el.classList.remove("show"); el.hidden = true; }
+  shotReviewWait = null;
+}
+function showShotReview(canvas, index, total) {
+  return new Promise((resolve) => {
+    const el = $("shot-review");
+    const img = $("shot-review-img");
+    const nextBtn = $("btn-next-shot");
+    const retakeBtn = $("btn-retake");
+    if (!el || !img || !nextBtn) { resolve("next"); return; }
+    img.src = canvas.toDataURL("image/jpeg", 0.9);
+    const last = index >= total - 1;
+    nextBtn.textContent = last ? "Lihat hasil" : ("Foto ke-" + (index + 2));
+    hideShotReview.resolver = resolve;
+    shotReviewWait = { resolve, index, total };
+    el.hidden = false;
+    el.classList.add("show");
+    $("cam-meta").textContent = last
+      ? (total > 1 ? ("Foto " + total + " dari " + total) : (LAYOUTS[currentLayout()] || LAYOUTS.single).label)
+      : ("Foto " + (index + 1) + " dari " + total + " · siap?");
+  });
+}
+async function takeOneShot() {
+  await countdown();
+  flash();
+  await sleep(60);
+  return captureFrame();
+}
 async function runShoot() {
   if (shooting) return;
   if (!stream && !$("cam-video").srcObject) {
@@ -1964,27 +2123,36 @@ async function runShoot() {
   }
   shooting = true;
   $("btn-shutter").disabled = true;
-  $("cam-picker").style.visibility = "hidden";
-  const n = (LAYOUTS[settings.layout] || LAYOUTS.single).shots;
+  const picker = $("cam-picker");
+  const layouts = $("cam-layouts");
+  if (picker) picker.style.visibility = "hidden";
+  if (layouts) layouts.style.visibility = "hidden";
+  const layout = currentLayout();
+  const n = (LAYOUTS[layout] || LAYOUTS.single).shots;
   const shots = [];
   try {
-    for (let i = 0; i < n; i++) {
-      $("cam-meta").textContent = n > 1 ? `Foto ${i + 1} dari ${n}` : (LAYOUTS[settings.layout].label);
-      await countdown();
-      flash();
-      shots.push(captureFrame());
-      await sleep(400);
-      if (i < n - 1) await sleep(700);
+    for (let i = 0; i < n; ) {
+      hideShotReview();
+      $("cam-meta").textContent = n > 1 ? ("Foto " + (i + 1) + " dari " + n) : (LAYOUTS[layout].label);
+      shots[i] = await takeOneShot();
+      const action = await showShotReview(shots[i], i, n);
+      if (action === "cancel") return;
+      if (action === "retake") continue;
+      i += 1;
     }
+    hideShotReview();
     $("cam-meta").textContent = "Mengolah foto…";
     await showComposed(shots);
   } catch (err) {
     console.error(err);
+    hideShotReview();
     showCamError("Terjadi kesalahan saat mengambil foto. Silakan coba lagi.");
   } finally {
     shooting = false;
     $("btn-shutter").disabled = false;
-    $("cam-picker").style.visibility = "";
+    if (picker) picker.style.visibility = "";
+    if (layouts) layouts.style.visibility = "";
+    hideShotReview();
   }
 }
 
@@ -2005,7 +2173,7 @@ async function showComposed(images, skipUpload) {
   const filterId = currentFilter(), frameId = currentFrame();
   const filtered = raw.map((c) => PBFilters.apply(c, filterId));
   const canvas = $("work-canvas");
-  await PBFrames.compose(canvas, filtered, { frame: frameId, layout: settings.layout || "single", texts: frameTexts(), logo: logoImg.custom, overlay: (overlayImg && settings.customOverlay !== "skip") ? overlayImg : null });
+  await PBFrames.compose(canvas, filtered, { frame: frameId, layout: currentLayout(), texts: frameTexts(), logo: logoImg.custom, overlay: (overlayImg && settings.customOverlay !== "skip") ? overlayImg : null });
   // JPEG 0,92 (bukan PNG): encode jauh lebih cepat di HP & hemat penyimpanan perangkat
   const dataURL = canvas.toDataURL("image/jpeg", 0.92);
   const jpegBlob = dataURLToBlob(dataURL);
@@ -2014,7 +2182,7 @@ async function showComposed(images, skipUpload) {
     id: (crypto.randomUUID && crypto.randomUUID()) || String(Date.now()),
     createdAt: Date.now(),
     dataURL,
-    layout: settings.layout,
+    layout: currentLayout(),
     theme: frameId,
     frame: frameId,
     filter: filterId,
@@ -2235,6 +2403,24 @@ function bind() {
   bindPickers();
   $("btn-start").addEventListener("click", goCamera);
   $("btn-shutter").addEventListener("click", runShoot);
+  const layoutRow = $("cam-layouts");
+  if (layoutRow) layoutRow.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-layout]");
+    if (!b || shooting) return;
+    setGuestLayout(b.dataset.layout);
+  });
+  const retakeBtn = $("btn-retake");
+  const nextShotBtn = $("btn-next-shot");
+  if (retakeBtn) retakeBtn.addEventListener("click", () => {
+    if (shotReviewWait && shotReviewWait.resolve) {
+      const r = shotReviewWait.resolve; shotReviewWait = null; hideShotReview(); r("retake");
+    }
+  });
+  if (nextShotBtn) nextShotBtn.addEventListener("click", () => {
+    if (shotReviewWait && shotReviewWait.resolve) {
+      const r = shotReviewWait.resolve; shotReviewWait = null; hideShotReview(); r("next");
+    }
+  });
   $("btn-cam-back").addEventListener("click", goHome);
   $("btn-cam-home").addEventListener("click", goHome);
   $("btn-cam-retry").addEventListener("click", () => {
@@ -2328,6 +2514,7 @@ async function init() {
   await resolvePelaminan();
   loadSettings();
   loadGuestChoice();
+  renderLayoutPicks();
   bind();
   startOpening();
   try { const el = $("home-logo"), w = staticLogoSrc(); if (el.getAttribute("src") !== w) el.src = w; } catch (e) {}

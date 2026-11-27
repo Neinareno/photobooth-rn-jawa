@@ -449,3 +449,16 @@ body.jawa #screen-quota .home-stage {
   }
   #jw-flash.go { opacity: 0.4; }
 }
+
+body.jawa .layout-row button {
+  font-family: Cinzel, "Plus Jakarta Sans", sans-serif !important;
+  background: rgba(42, 26, 22, 0.55);
+  color: #F8EEE6;
+  border: 1px solid rgba(232, 214, 196, 0.45);
+}
+body.jawa .layout-row button.on {
+  background: #8B4F4A;
+  border-color: #E8D6C4;
+  color: #F8EEE6;
+}
+body.jawa #shot-review .btn-primary { background: #8B4F4A; color: #F8EEE6; }

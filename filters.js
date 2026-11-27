@@ -330,15 +330,50 @@ void main(){
     return apply2D(src, w, h, filterId);
   }
 
-  /** Pratinjau live: render video ke canvas tampil setiap frame. */
+  /* object-fit:cover, pusat. Dipakai pratinjau live & pengambilan foto supaya hasil = yang terlihat. */
+  function sourceCover(sw, sh, dw, dh) {
+    const scale = Math.max(dw / sw, dh / sh);
+    const tw = dw / scale, th = dh / scale;
+    return { sx: (sw - tw) / 2, sy: (sh - th) / 2, sw: tw, sh: th };
+  }
+  function coverDraw(ctx, src, dw, dh, flipX) {
+    const sw = src.videoWidth || src.naturalWidth || src.width;
+    const sh = src.videoHeight || src.naturalHeight || src.height;
+    if (!sw || !sh) return;
+    const r = sourceCover(sw, sh, dw, dh);
+    ctx.save();
+    if (flipX) { ctx.translate(dw, 0); ctx.scale(-1, 1); }
+    ctx.drawImage(src, r.sx, r.sy, r.sw, r.sh, 0, 0, dw, dh);
+    ctx.restore();
+  }
+  function coverToCanvas(src, dw, dh, flipX) {
+    const c = document.createElement("canvas");
+    c.width = Math.max(1, Math.round(dw));
+    c.height = Math.max(1, Math.round(dh));
+    coverDraw(c.getContext("2d"), src, c.width, c.height, !!flipX);
+    return c;
+  }
+
+  /** Pratinjau live: canvas berukuran kotak tampilan, video di-cover di tengah (bukan object-fit CSS). */
   function createLivePreview(video, canvas, opts) {
     opts = opts || {};
     const maxLong = opts.maxLong || 960;
     let r = createRenderer(canvas);
     let filterId = byId(opts.filter || DEFAULT).id;
     let raf = 0, running = false, frames = 0, t0 = 0, fps = 0, lastMs = 0;
+    let stage = document.createElement("canvas");
     const useGL = !!r;
     if (!useGL) { canvas.style.display = "none"; video.style.opacity = "1"; }
+    function destSize() {
+      const w = canvas.clientWidth || canvas.offsetWidth || 0;
+      const h = canvas.clientHeight || canvas.offsetHeight || 0;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      let ow = Math.max(2, Math.round(w * dpr));
+      let oh = Math.max(2, Math.round(h * dpr));
+      const cap = maxLong / Math.max(ow, oh, 1);
+      if (cap < 1) { ow = Math.max(2, Math.round(ow * cap)); oh = Math.max(2, Math.round(oh * cap)); }
+      return { ow, oh };
+    }
     function tick() {
       if (!running) return;
       raf = requestAnimationFrame(tick);
@@ -346,10 +381,14 @@ void main(){
       if (r.lost()) { running = false; video.style.opacity = "1"; canvas.style.display = "none"; video.style.filter = byId(filterId).css; return; }
       const vw = video.videoWidth, vh = video.videoHeight;
       if (!vw || !vh || video.readyState < 2) return;
-      const k = Math.min(1, maxLong / Math.max(vw, vh));
-      const ow = Math.round(vw * k), oh = Math.round(vh * k);
+      const { ow, oh } = destSize();
+      if (ow < 2 || oh < 2) return;
+      if (stage.width !== ow || stage.height !== oh) { stage.width = ow; stage.height = oh; }
+      const sctx = stage.getContext("2d");
+      sctx.clearRect(0, 0, ow, oh);
+      coverDraw(sctx, video, ow, oh, false);
       const t = performance.now();
-      try { r.render(video, vw, vh, filterId, ow, oh); } catch (e) { return; }
+      try { r.render(stage, ow, oh, filterId, ow, oh); } catch (e) { return; }
       lastMs = performance.now() - t;
       frames++;
       if (!t0) t0 = t;
@@ -363,6 +402,7 @@ void main(){
       stop() { running = false; cancelAnimationFrame(raf); },
       showVideo() { video.style.opacity = "1"; canvas.style.display = "none"; },
       setFilter(id) { filterId = byId(id).id; applyCssFallback(); },
+      resize() {},
       getFilter: () => filterId,
       stats: () => ({ fps: Math.round(fps * 10) / 10, lastRenderMs: Math.round(lastMs * 100) / 100, webgl: useGL })
     };
@@ -383,5 +423,5 @@ void main(){
     return out;
   }
 
-  window.PBFilters = { FILTERS, byId, apply, createLivePreview, thumbnails, DEFAULT, hasWebGL: () => { getCaptureRenderer(); return !!glOK; } };
+  window.PBFilters = { FILTERS, byId, apply, createLivePreview, thumbnails, DEFAULT, hasWebGL: () => { getCaptureRenderer(); return !!glOK; }, coverDraw, coverToCanvas, sourceCover };
 })();
