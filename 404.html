@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mengalihkan…</title>
+  <style>
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center;
+      font-family: "Plus Jakarta Sans", system-ui, sans-serif; color: #6B3A36;
+      background: #F6EFE6; }
+    a { color: #8B4F4A; font-weight: 700; }
+  </style>
+  <script>
+    (function () {
+      var repo = "/photobooth-rn-jawa";
+      var path = location.pathname;
+      if (path.indexOf(repo) === 0) path = path.slice(repo.length);
+      path = path.replace(/\/+$/, "") || "/";
+      var map = {
+        "/galeri": "galeri.html",
+        "/admin": "admin.html",
+        "/display": "display.html",
+        "/galeri-tamu": "galeri-tamu.html",
+        "/unduh": "unduh.html",
+        "/photobooth": "index.html"
+      };
+      var target = map[path];
+      if (target) {
+        location.replace(repo + "/" + target + location.search + location.hash);
+        return;
+      }
+    })();
+  </script>
+</head>
+<body>
+  <p>Halaman tidak ditemukan. <a href="/photobooth-rn-jawa/">Kembali ke photobooth</a>.</p>
+</body>
+</html>

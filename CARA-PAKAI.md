@@ -3,7 +3,7 @@
 Versi baru bergaya undangan Jawa (peach, rose, coklat), terpisah dari photobooth Booth Media yang sudah ada. Semua data mempelai tetap sama; yang ditambahkan adalah nama tempat dan jam resepsi.
 
 **Mempelai:** Ratna Prastyani & Nuryadi  
-**Tanggal:** 29 Januari 2027  
+**Tanggal:** 29 . 01 . 2027  
 **Monogram:** R & N  
 **Hashtag:** #MenujuRidhaRN  
 **Tagline:** Two Hearts • One Promise • Forever  
@@ -16,23 +16,23 @@ Folder sumber: `/workspace/photobooth-rn-jawa/`. Photobooth Booth Media yang lam
 
 ---
 
-## 1. Tautan (setelah ditayangkan)
+## 1. Tautan
 
-Ganti `https://DOMAIN` dengan alamat yang aktif (lihat bagian 6).
+Domain: `https://neinareno.github.io/photobooth-rn-jawa`
 
-- Tamu (photobooth): `https://DOMAIN/`
-- Galeri pengantin (PIN): `https://DOMAIN/galeri` atau `/galeri.html`
-- Pengaturan admin (PIN sama): `https://DOMAIN/admin` atau `/admin.html`
-- Layar display / TV: `https://DOMAIN/display` atau `/display.html`
-- Galeri tamu (tanpa PIN, tanpa tombol hapus): `https://DOMAIN/galeri-tamu` atau `/galeri-tamu.html`
+- Tamu (photobooth): https://neinareno.github.io/photobooth-rn-jawa/
+- Galeri pengantin (PIN): https://neinareno.github.io/photobooth-rn-jawa/galeri.html
+- Pengaturan admin (PIN sama): https://neinareno.github.io/photobooth-rn-jawa/admin.html
+- Layar display / TV: https://neinareno.github.io/photobooth-rn-jawa/display.html
+- Galeri tamu (tanpa PIN, tanpa tombol hapus): https://neinareno.github.io/photobooth-rn-jawa/galeri-tamu.html
 
 **PIN admin & galeri:** `290127` (tanggal acara). Jangan dibagikan kepada tamu.
 
 **Mode pelaminan** (rahasia, tanpa batas kuota, khusus HP di pelaminan):
 
-`https://DOMAIN/?mode=pelaminan&k=rNjw7k2mQp`
+`https://neinareno.github.io/photobooth-rn-jawa/?mode=pelaminan&k=rNjw7k2mQp`
 
-Buka sekali di HP pelaminan; mode tersimpan di HP itu. Kembali ke mode tamu: `https://DOMAIN/?mode=tamu`.
+Buka sekali di HP pelaminan; mode tersimpan di HP itu. Kembali ke mode tamu: `https://neinareno.github.io/photobooth-rn-jawa/?mode=tamu`.
 
 ---
 
@@ -79,19 +79,19 @@ Buka [http://localhost:8080/](http://localhost:8080/) di Chrome atau Edge, lalu 
 
 ## 6. Menayangkan (hosting gratis)
 
-### A. Cloudflare Pages (disarankan) — proyek baru `photobooth-rn-jawa`
+### A. GitHub Pages (aktif)
+
+Repositori: [Neinareno/photobooth-rn-jawa](https://github.com/Neinareno/photobooth-rn-jawa), cabang `main`, folder `/`.
+
+Alamat: **https://neinareno.github.io/photobooth-rn-jawa/**
+
+Tautan pendek (`/galeri`, `/admin`, `/display`, `/galeri-tamu`) dialihkan lewat `404.html`. Tautan dengan akhiran `.html` juga selalu bisa dipakai.
+
+### B. Cloudflare Pages (opsional, proyek baru)
 
 Unggah isi folder ini (termasuk `index.html`, `assets/`, `ornamen/`, `stickers/`, `_redirects`) ke proyek Pages **baru** bernama `photobooth-rn-jawa`. Jangan menimpa proyek `photobooth-ratna-nuryadi`.
 
 Alamat yang diharapkan: `https://photobooth-rn-jawa.pages.dev`
-
-### B. GitHub Pages
-
-Repositori publik baru `Neinareno/photobooth-rn-jawa`, lalu aktifkan Pages dari cabang `main` (folder `/`).
-
-Alamat yang diharapkan: `https://neinareno.github.io/photobooth-rn-jawa/`
-
-Catatan: di GitHub Pages, pakai akhiran `.html` (`/galeri.html`, `/admin.html`) jika tautan pendek belum diarahkan.
 
 ---
 
