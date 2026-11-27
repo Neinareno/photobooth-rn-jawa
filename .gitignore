@@ -9,3 +9,7 @@ wayang-wanita.png
 contoh-hasil.png
 .DS_Store
 finalize-after-sql.sh
+
+neon-fn/bundle.mjs
+.env
+.env.*

@@ -1,0 +1,9 @@
+{
+  "name": "photobooth-rn-jawa-api",
+  "private": true,
+  "type": "module",
+  "main": "index.mjs",
+  "dependencies": {
+    "@neondatabase/serverless": "^1.0.2"
+  }
+}

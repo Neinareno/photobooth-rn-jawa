@@ -57,11 +57,13 @@ Filter tetap sama seperti sebelumnya (bawaan: Soft Skin). Semua pengaturan (term
 
 ---
 
-## 4. Penyimpanan (terpisah dari booth lama)
+## 4. Penyimpanan online (backend baru, terpisah dari booth lama)
 
 - Pengaturan dan kuota memakai kunci `localStorage` / IndexedDB sendiri (`photobooth-rnjawa-…`), jadi tidak tercampur dengan photobooth Booth Media jika dibuka di perangkat yang sama.
-- **Unggahan online (Supabase) sengaja dimatikan** agar foto tidak masuk ke galeri/bucket milik booth lama. Foto tetap tersimpan di perangkat booth (IndexedDB) dan bisa diunduh atau dicetak di tempat.
-- Jika nanti ingin galeri online sendiri: buat proyek Supabase **baru** (jangan memakai yang lama), jalankan `supabase-setup.sql`, lalu isi URL dan kunci *anon* di admin. Kode sudah memakai awalan folder `rn-jawa/` pada `file_path`. Jangan menempelkan kredensial proyek lama.
+- Foto final diunggah ke **backend Neon baru** (proyek `photobooth-rn-jawa`, terpisah dari Supabase Booth Media). Tidak ada kunci rahasia di situs; halaman GitHub Pages hanya memakai URL API publik.
+- Setelah tamu menekan simpan, foto muncul di [layar display / TV](https://neinareno.github.io/photobooth-rn-jawa/display.html) (diperbarui tiap beberapa detik, plus kode QR unduh) dan di [galeri](https://neinareno.github.io/photobooth-rn-jawa/galeri.html) / [galeri tamu](https://neinareno.github.io/photobooth-rn-jawa/galeri-tamu.html).
+- Foto juga tetap disimpan di perangkat booth (IndexedDB) dan bisa diunduh atau dicetak di tempat. Jika unggahan gagal, antrian akan dicoba lagi saat daring.
+- Hapus foto di galeri pengantin tetap memakai PIN `290127` (diverifikasi di server, dengan batas percobaan salah).
 
 ---
 

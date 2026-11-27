@@ -12,6 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Parisienne&family=Cinzel:wght@500;600;700&family=Jost:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="sync.js"></script>
   <script src="pin.js"></script>
   <style>
     :root {
@@ -251,8 +252,9 @@
   <script>
     // Samakan dengan CONFIG di photobooth.html
     const CONFIG = {
+      apiUrl: "https://br-raspy-boat-bi9ymbbr-api.compute.c-5.ap-southeast-1.aws.neon.tech",
       supabaseUrl: "",
-      supabaseAnonKey: "sb_publishable_5U20TOgS5LZewLIhR-Mi5g_N-PVHpxi",
+      supabaseAnonKey: "",
       storageBucket: "photobooth"
     };
 
@@ -460,8 +462,21 @@
       if (isDemo()) {
         return { ok: true, ids: list.map((p) => p.id), storageWarn: false };
       }
+      if (window.PBSync && PBSync.enabled()) {
+        try {
+          const data = await PBSync.deletePhotos(list.map((p) => p.id), pin);
+          if (!data || !data.ok) {
+            const e = (data && data.error) || "invalid_pin";
+            return { ok: false, error: e, message: window.PBPin ? PBPin.message({ error: e }) : "PIN tidak sesuai." };
+          }
+          return { ok: true, ids: list.map((p) => p.id), storageWarn: false };
+        } catch (e) {
+          console.warn(e);
+          return { ok: false, error: "network", message: "Gagal menghapus. Periksa koneksi internet lalu coba lagi." };
+        }
+      }
       const { url, key } = credentials();
-      if (!url || !key || !window.supabase) return { ok: false, message: "Supabase belum terhubung." };
+      if (!url || !key || !window.supabase) return { ok: false, message: "Penyimpanan online belum terhubung." };
       const client = window.supabase.createClient(url, key);
       let data, error;
       try {
@@ -508,9 +523,22 @@
         render();
         return;
       }
+      if (window.PBSync && PBSync.enabled()) {
+        status.textContent = "Memuat foto…";
+        try {
+          const data = await PBSync.listPhotos(1000);
+          photos = (data || []).filter((p) => !p.file_path || String(p.file_path).startsWith("rn-jawa/"));
+          note.textContent = "";
+          render();
+        } catch (err) {
+          console.warn(err);
+          status.textContent = "Gagal memuat galeri. Periksa koneksi internet. Untuk pratinjau, buka galeri.html?demo=1.";
+        }
+        return;
+      }
       const { url, key } = credentials();
       if (!url || !key || !window.supabase) {
-        status.textContent = "Supabase belum diatur. Isi URL dan anon key di halaman admin, atau buka galeri.html?demo=1 untuk pratinjau.";
+        status.textContent = "Penyimpanan online belum terhubung. Buka galeri.html?demo=1 untuk pratinjau.";
         photos = [];
         render();
         return;
@@ -525,7 +553,7 @@
         render();
       } catch (err) {
         console.warn(err);
-        status.textContent = "Gagal memuat galeri. Periksa URL, kunci, dan kebijakan RLS. Untuk pratinjau, buka galeri.html?demo=1.";
+        status.textContent = "Gagal memuat galeri. Periksa koneksi internet. Untuk pratinjau, buka galeri.html?demo=1.";
       }
     }
 

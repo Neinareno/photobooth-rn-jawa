@@ -16,6 +16,7 @@
   <script src="qrcode.min.js"></script>
   <script src="filters.js"></script>
   <script src="frames.js"></script>
+  <script src="sync.js"></script>
   <style>
     :root {
       --bg: #E8D5B0;
@@ -848,6 +849,7 @@
   <script>
 /* ===== Photobooth Ratna Prastyani & Nuryadi ===== */
 const CONFIG = {
+  apiUrl: "https://br-raspy-boat-bi9ymbbr-api.compute.c-5.ap-southeast-1.aws.neon.tech",
   supabaseUrl: "",
   supabaseAnonKey: "",
   storageBucket: "photobooth",
@@ -905,6 +907,7 @@ const DEFAULTS = {
   showVenueFrame: true,
   theme: "emas-coklat",
   layout: "strip2",
+  apiUrl: "https://br-raspy-boat-bi9ymbbr-api.compute.c-5.ap-southeast-1.aws.neon.tech",
   supabaseUrl: "",
   supabaseAnonKey: "",
   customLogo: "",
@@ -2325,15 +2328,25 @@ function getSupabase() {
   try { return window.supabase.createClient(url, key); } catch (e) { return null; }
 }
 
-async function handleUpload(rec, blob) {
+function onlineEnabled() {
+  return !!(window.PBSync && PBSync.enabled());
+}
+
+async function uploadPhotoOnline(rec, blob) {
+  if (window.PBSync && PBSync.enabled()) return PBSync.uploadPhoto(blob, rec);
   const client = getSupabase();
-  if (!client) {
+  if (!client) throw new Error("offline");
+  return uploadToSupabase(client, rec, blob);
+}
+
+async function handleUpload(rec, blob) {
+  if (!onlineEnabled() && !getSupabase()) {
     $("qr-status").textContent = "Foto tersimpan di perangkat ini. Penyimpanan online belum terhubung, jadi kode QR belum tersedia.";
     return;
   }
   $("qr-status").textContent = "Mengunggah foto…";
   try {
-    const uploaded = await uploadToSupabase(client, rec, blob);
+    const uploaded = await uploadPhotoOnline(rec, blob);
     rec.publicUrl = uploaded.public_url;
     lastResult.publicUrl = uploaded.public_url;
     await idbPut("photos", rec);
@@ -2386,14 +2399,13 @@ async function showQR(url) {
 }
 
 async function processQueue() {
-  const client = getSupabase();
-  if (!client) return;
+  if (!onlineEnabled() && !getSupabase()) return;
   const items = await idbGetAll("queue");
   for (const it of items) {
     try {
       const blob = await (await fetch(it.dataURL)).blob();
       const rec = it.rec || it;
-      const uploaded = await uploadToSupabase(client, rec, blob);
+      const uploaded = await uploadPhotoOnline(rec, blob);
       rec.publicUrl = uploaded.public_url;
       await idbPut("photos", rec);
       await idbDel("queue", it.id);

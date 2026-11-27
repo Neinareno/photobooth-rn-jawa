@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="display-jawa.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="qrcode.min.js"></script>
+  <script src="sync.js"></script>
 </head>
 <body class="is-empty">
   <div id="bg">
@@ -101,8 +102,9 @@
   <script>
   (function () {
     const CONFIG = {
+      apiUrl: "https://br-raspy-boat-bi9ymbbr-api.compute.c-5.ap-southeast-1.aws.neon.tech",
       supabaseUrl: "",
-      supabaseAnonKey: "sb_publishable_5U20TOgS5LZewLIhR-Mi5g_N-PVHpxi",
+      supabaseAnonKey: "",
       table: "photos"
     };
     const q = new URLSearchParams(location.search);
@@ -229,6 +231,9 @@
     }
 
     async function fetchAll() {
+      if (window.PBSync && PBSync.enabled()) {
+        return await PBSync.listPhotos(1000);
+      }
       if (!client) return null;
       const { data, error } = await client.from(CONFIG.table)
         .select("id, public_url, created_at")

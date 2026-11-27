@@ -22,6 +22,14 @@
   async function verify(client, pin) {
     pin = String(pin || "").trim();
     if (!pin) return { ok: false, error: "empty" };
+    if (window.PBSync && typeof PBSync.verifyPin === "function" && PBSync.enabled()) {
+      try {
+        const data = await PBSync.verifyPin(pin);
+        if (data && typeof data.ok === "boolean") return { ok: !!data.ok, error: data.error || null, mode: "server" };
+      } catch (e) {
+        /* jatuh ke klien lama atau fallback */
+      }
+    }
     if (client) {
       try {
         const { data, error } = await client.rpc("verify_pin", { p_pin: pin });

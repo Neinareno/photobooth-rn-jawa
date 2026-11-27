@@ -12,6 +12,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@500&family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=Ms+Madi&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="sync.js"></script>
   <style>
     :root { --pink: #F8D6DD; --pink-2: #FBE6EA; --berry: #C25A72; --berry-d: #A9475F; --cocoa: #5B3A33; --cocoa-2: #8A6B63;
       --mint: #CFE8DA; --lilac: #E4DAF6;
@@ -205,7 +206,7 @@
   <script>
   (function () {
     "use strict";
-    const CONFIG = { supabaseUrl: "", supabaseAnonKey: "sb_publishable_5U20TOgS5LZewLIhR-Mi5g_N-PVHpxi", table: "photos" };
+    const CONFIG = { apiUrl: "https://br-raspy-boat-bi9ymbbr-api.compute.c-5.ap-southeast-1.aws.neon.tech", supabaseUrl: "", supabaseAnonKey: "", table: "photos" };
     const LIMIT = 8;                       // jatah unduhan per HP (unik per foto)
     const LS_DL = "photobooth-rnjawa-galeri-dl-v1";
     const CK_DL = "pb_rn_gdl";
@@ -479,12 +480,13 @@
 
     /* ---------- data ---------- */
     async function fetchAll() {
+      if (window.PBSync && PBSync.enabled()) return await PBSync.listPhotos(1000);
       const { data, error } = await client.from(CONFIG.table).select("id, public_url, created_at").order("created_at", { ascending: false }).limit(1000);
       if (error) throw error;
       return data || [];
     }
     async function poll() {
-      if (!client) return;
+      if (!(window.PBSync && PBSync.enabled()) && !client) return;
       try {
         const rows = await fetchAll();
         const ids = new Set(rows.map((r) => String(r.id)));
@@ -558,8 +560,8 @@
     loadDownloaded();
     renderQuota();
     try { client = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey); } catch (e) { client = null; }
-    if (!client) { $("loading").hidden = true; $("error").hidden = false; }
-    else { poll(); subscribe(); setInterval(poll, POLL_MS); }
+    if ((window.PBSync && PBSync.enabled()) || client) { poll(); subscribe(); setInterval(poll, POLL_MS); }
+    else { $("loading").hidden = true; $("error").hidden = false; }
 
     window.__galeri = {
       state: () => ({ photos: photos.length, remaining: remaining(), downloaded: [...downloaded], selected: [...selected], selecting, lbId, loaded }),
