@@ -363,6 +363,11 @@ void main(){
     let raf = 0, running = false, frames = 0, t0 = 0, fps = 0, lastMs = 0;
     let stage = document.createElement("canvas");
     const useGL = !!r;
+    function isFlip() {
+      if (typeof opts.flipX === "function") return !!opts.flipX();
+      if (opts.flipX) return true;
+      return !!(video && video.classList && video.classList.contains("mirror"));
+    }
     if (!useGL) { canvas.style.display = "none"; video.style.opacity = "1"; }
     function destSize() {
       const w = canvas.clientWidth || canvas.offsetWidth || 0;
@@ -377,8 +382,6 @@ void main(){
     function tick() {
       if (!running) return;
       raf = requestAnimationFrame(tick);
-      if (!useGL) return;
-      if (r.lost()) { running = false; video.style.opacity = "1"; canvas.style.display = "none"; video.style.filter = byId(filterId).css; return; }
       const vw = video.videoWidth, vh = video.videoHeight;
       if (!vw || !vh || video.readyState < 2) return;
       const { ow, oh } = destSize();
@@ -386,25 +389,44 @@ void main(){
       if (stage.width !== ow || stage.height !== oh) { stage.width = ow; stage.height = oh; }
       const sctx = stage.getContext("2d");
       sctx.clearRect(0, 0, ow, oh);
-      coverDraw(sctx, video, ow, oh, false);
+      /* Cermin di bitmap, bukan CSS scaleX: filter CSS (grayscale Mono Klasik)
+       * + transform pada elemen yang sama menggeser pratinjau ke samping. */
+      const flip = isFlip();
+      coverDraw(sctx, video, ow, oh, flip);
+      canvas.style.transform = "none";
+      video.style.filter = "none";
       const t = performance.now();
-      try { r.render(stage, ow, oh, filterId, ow, oh); } catch (e) { return; }
+      const glOk = !!(r && !r.lost());
+      if (r && r.lost()) r = null;
+      try {
+        if (glOk) r.render(stage, ow, oh, filterId, ow, oh);
+        else {
+          const out = apply(stage, filterId);
+          const cctx = canvas.getContext("2d");
+          if (canvas.width !== ow || canvas.height !== oh) { canvas.width = ow; canvas.height = oh; }
+          cctx.drawImage(out, 0, 0, ow, oh);
+        }
+      } catch (e) { return; }
       lastMs = performance.now() - t;
       frames++;
       if (!t0) t0 = t;
       if (t - t0 >= 1000) { fps = frames * 1000 / (t - t0); frames = 0; t0 = t; }
     }
-    function applyCssFallback() { if (!useGL) video.style.filter = byId(filterId).css; }
-    applyCssFallback();
     return {
       useGL,
-      start() { if (running) return; running = true; t0 = 0; frames = 0; if (useGL) { video.style.opacity = "0"; canvas.style.display = "block"; } raf = requestAnimationFrame(tick); },
+      start() {
+        if (running) return;
+        running = true; t0 = 0; frames = 0;
+        video.style.opacity = "0"; video.style.filter = "none";
+        canvas.style.display = "block"; canvas.style.transform = "none";
+        raf = requestAnimationFrame(tick);
+      },
       stop() { running = false; cancelAnimationFrame(raf); },
       showVideo() { video.style.opacity = "1"; canvas.style.display = "none"; },
-      setFilter(id) { filterId = byId(id).id; applyCssFallback(); },
+      setFilter(id) { filterId = byId(id).id; },
       resize() {},
       getFilter: () => filterId,
-      stats: () => ({ fps: Math.round(fps * 10) / 10, lastRenderMs: Math.round(lastMs * 100) / 100, webgl: useGL })
+      stats: () => ({ fps: Math.round(fps * 10) / 10, lastRenderMs: Math.round(lastMs * 100) / 100, webgl: !!(r && !r.lost()) })
     };
   }
 

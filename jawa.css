@@ -393,13 +393,49 @@ body.jawa .flash {
   100% { opacity: 0; }
 }
 
-/* camera / result chrome */
-body.jawa .cam-wrap, body.jawa #screen-camera, body.jawa #screen-result {
-  background: #2A1A16 !important;
+/* camera chrome stays slightly darker for viewfinder contrast;
+   result + shot-review memakai palet beranda (peach / cream / mauve). */
+body.jawa .cam-wrap, body.jawa #screen-camera {
+  background: #3A2420 !important;
 }
-body.jawa .picker, body.jawa .cam-bottom, body.jawa .result-actions {
+body.jawa #screen-result {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(248,238,230,0.96) 0%, rgba(243,220,208,0.96) 48%, #F3DCD0 100%) !important;
+}
+body.jawa .picker, body.jawa .cam-bottom {
   background: linear-gradient(180deg, rgba(42,26,22,0), rgba(42,26,22,0.88));
 }
+body.jawa #screen-result .result-actions,
+body.jawa .result-actions {
+  background: linear-gradient(180deg, rgba(243,220,208,0), rgba(248,238,230,0.96));
+}
+body.jawa #result-img {
+  border: 1px solid rgba(139, 90, 68, 0.28) !important;
+  box-shadow: 0 16px 40px -16px rgba(107, 58, 54, 0.35) !important;
+  background: #F8EEE6;
+}
+body.jawa .qr-box,
+body.jawa #qr-box {
+  background: rgba(248, 238, 230, 0.94) !important;
+  border: 1px solid rgba(139, 90, 68, 0.22);
+  color: #6B3A36;
+}
+body.jawa #shot-review {
+  background: rgba(243, 220, 208, 0.82) !important;
+}
+body.jawa #shot-review img {
+  background: #F8EEE6 !important;
+}
+body.jawa #shot-review .shot-review-actions {
+  background: linear-gradient(0deg, rgba(248,238,230,0.97), rgba(243,220,208,0.5) 80%, transparent) !important;
+}
+body.jawa #screen-result .picker,
+body.jawa .picker-result {
+  background: linear-gradient(180deg, rgba(243,220,208,0), rgba(248,238,230,0.96)) !important;
+}
+body.jawa .picker-result .pi { color: #6B3A36 !important; }
+body.jawa .picker-result .pi span { text-shadow: none !important; color: #6B3A36; }
+body.jawa .picker-result .pi.on span { color: #8B4F4A !important; }
 body.jawa .icon-btns .btn-icon {
   background: rgba(248, 238, 230, 0.9) !important;
   color: var(--jw-mauve) !important;

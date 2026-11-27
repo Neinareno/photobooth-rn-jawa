@@ -310,7 +310,10 @@
       transform-origin: center center;
       transform: none;
     }
-    #cam-video.mirror, #cam-canvas.mirror { transform: scaleX(-1); }
+    #cam-video.mirror { transform: scaleX(-1); }
+    /* Cermin live preview dilakukan di bitmap (filters.js). CSS scaleX pada
+     * kanvas + filter (terutama Mono Klasik) menggeser tampilan ke samping. */
+    #cam-canvas, #cam-canvas.mirror { transform: none !important; }
     #cam-canvas { display: none; }
     .cam-frame-overlay {
       position: absolute; inset: 0;
@@ -330,16 +333,16 @@
     #shot-review {
       position: absolute; inset: 0; z-index: 7; display: none;
       flex-direction: column; align-items: center; justify-content: flex-end;
-      background: rgba(10,6,4,0.55);
+      background: rgba(243,220,208,0.72);
     }
     #shot-review.show { display: flex !important; }
     #shot-review img {
-      position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000;
+      position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #F8EEE6;
     }
     #shot-review .shot-review-actions {
       position: relative; z-index: 1; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
       width: 100%; padding: 16px 16px calc(16px + var(--safe-b, 0px));
-      background: linear-gradient(0deg, rgba(20,10,8,0.88), rgba(20,10,8,0.2) 80%, transparent);
+      background: linear-gradient(0deg, rgba(248,238,230,0.96), rgba(243,220,208,0.55) 80%, transparent);
     }
     #shot-review .shot-review-actions .btn-primary,
     #shot-review .shot-review-actions .btn-secondary { min-width: 140px; }
@@ -378,18 +381,20 @@
     .cam-error-card p { font-size: 1.12rem; line-height: 1.55; margin-bottom: 20px; }
 
     #screen-result {
-      background: radial-gradient(ellipse at 50% 40%, var(--bg-inner) 0%, var(--bg) 55%, var(--bg-deep) 100%);
+      background: radial-gradient(ellipse at 50% 0%, #F8EEE6 0%, #F3DCD0 55%, #E8C8B8 100%);
     }
     .result-stage {
       flex: 1; width: 100%; display: flex; align-items: center; justify-content: center;
       gap: 24px; min-height: 0; padding: 8px 12px 0; flex-wrap: wrap;
     }
     #result-img {
-      max-width: min(100%, 420px);
-      max-height: calc(100vh - 200px - var(--safe-t) - var(--safe-b));
+      max-width: min(100%, 380px);
+      max-height: calc(100vh - 180px - var(--safe-t) - var(--safe-b));
       height: auto; width: auto;
-      box-shadow: 0 16px 50px var(--shadow);
-      border: 1px solid var(--gold);
+      object-fit: contain;
+      box-shadow: 0 16px 40px -16px rgba(107, 58, 54, 0.35);
+      border: 1px solid rgba(139, 90, 68, 0.28);
+      background: #F8EEE6;
     }
     .qr-box {
       display: none; flex-direction: column; align-items: center; gap: 8px;
@@ -1687,8 +1692,8 @@ function slotAspect() {
       if (s && s.w && s.h) return s.w / s.h;
     }
   } catch (e) {}
-  const map = { single: 1104 / 1180, strip2: 1104 / 582, strip3: 1104 / 382, grid4: 544 / 582 };
-  return map[currentLayout()] || (1104 / 582);
+  const map = { single: 1104 / 1180, strip2: 4 / 3, strip3: 4 / 3, grid4: 544 / 582 };
+  return map[currentLayout()] || (4 / 3);
 }
 function layoutViewfinder() {
   const stage = document.querySelector(".cam-stage");
@@ -1738,7 +1743,8 @@ function applyVideoMirror() {
   if (!v) return;
   v.classList.toggle("mirror", !!usingFrontCamera);
   const c = $("cam-canvas");
-  if (c) c.classList.toggle("mirror", !!usingFrontCamera);
+  /* Jangan CSS-mirror kanvas: flip sudah di bitmap pratinjau live. */
+  if (c) { c.classList.remove("mirror"); c.style.transform = "none"; }
 }
 
 function inferFacingFromLabel(label) {
@@ -1966,7 +1972,7 @@ function startLive() {
     if (!window.PBFilters) return;
     ensureViewfinderObserver();
     layoutViewfinder();
-    if (!live) live = PBFilters.createLivePreview(v, c, { filter: currentFilter(), maxLong: 960 });
+    if (!live) live = PBFilters.createLivePreview(v, c, { filter: currentFilter(), maxLong: 960, flipX: () => !!usingFrontCamera });
     live.setFilter(currentFilter());
     live.start();
     const refresh = () => {
