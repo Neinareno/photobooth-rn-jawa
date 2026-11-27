@@ -44,9 +44,15 @@ body.jawa .screen.active {
 }
 body { position: relative; min-height: 100%; }
 
-/* ---------- beranda scene ---------- */
+/* ---------- beranda scene: full-bleed, no gold surround ---------- */
+body.jawa #screen-home {
+  padding: 0 !important;
+  background: var(--jw-peach) !important;
+  overflow: hidden !important;
+}
 .home-scene {
-  position: relative;
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   overflow: hidden;
@@ -415,6 +421,15 @@ body.jawa #screen-quota .home-stage {
   background: transparent;
 }
 
+@media (orientation: landscape) and (max-height: 900px) {
+  .home-copy { padding: 2.4vh 5vw 0; margin-top: max(8px, env(safe-area-inset-top, 0px)); }
+  .scene-wayang { height: min(34vh, 260px); bottom: 2vh; }
+  #home-logo.home-mono { width: 56px; height: 56px; }
+  #home-names .name-a,
+  #home-names .name-b,
+  #home-names .name-single { font-size: clamp(1.8rem, 6vh, 2.8rem) !important; }
+  body.jawa #btn-start { margin-top: 8px; padding: 11px 28px !important; }
+}
 @media (max-width: 720px) {
   .scene-wayang { height: min(22vh, 200px); bottom: 3vh; }
   .home-copy { padding: 2.2vh 6vw 0; margin-top: max(1.5vh, env(safe-area-inset-top, 0px)); }
