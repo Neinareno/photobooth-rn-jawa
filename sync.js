@@ -24,8 +24,20 @@
     return data;
   }
 
+  let listEtag = "";
+  let lastListNotModified = false;
+
   async function listPhotos(limit) {
-    const res = await fetch(apiBase() + "/photos?limit=" + (limit || 200), { cache: "no-store" });
+    lastListNotModified = false;
+    const headers = {};
+    if (listEtag) headers["If-None-Match"] = listEtag;
+    const res = await fetch(apiBase() + "/photos?limit=" + (limit || 200), { headers: headers, cache: "no-cache" });
+    if (res.status === 304) {
+      lastListNotModified = true;
+      return Object.assign([], { notModified: true });
+    }
+    const et = res.headers.get("etag") || res.headers.get("ETag");
+    if (et) listEtag = et;
     const data = await parseJson(res);
     if (!res.ok || data.ok === false) throw new Error((data && data.error) || ("list " + res.status));
     return data.photos || [];
@@ -34,7 +46,8 @@
   async function uploadPhoto(blob, rec) {
     rec = rec || {};
     const fd = new FormData();
-    const ext = ((blob && blob.type) || "").includes("png") ? "png" : "jpg";
+    const typ = ((blob && blob.type) || "");
+    const ext = typ.includes("png") ? "png" : typ.includes("webp") ? "webp" : "jpg";
     const name = (rec.id || "photo") + "." + ext;
     fd.append("file", blob, name);
     if (rec.id) fd.append("id", rec.id);
@@ -68,5 +81,5 @@
     throw new Error((data && data.error) || ("delete " + res.status));
   }
 
-  global.PBSync = { DEFAULT_API, apiBase, enabled, listPhotos, uploadPhoto, verifyPin, deletePhotos };
+  global.PBSync = { DEFAULT_API, apiBase, enabled, listPhotos, uploadPhoto, verifyPin, deletePhotos, get lastListNotModified() { return lastListNotModified; } };
 })(typeof window !== "undefined" ? window : globalThis);

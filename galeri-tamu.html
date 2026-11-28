@@ -13,6 +13,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@500&family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..600&family=Ms+Madi&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="sync.js"></script>
+  <script src="limits.js"></script>
   <script src="ornamen-jawa.js" defer></script>
   <style>
     :root { --pink: #F8D6DD; --pink-2: #FBE6EA; --berry: #C25A72; --berry-d: #A9475F; --cocoa: #5B3A33; --cocoa-2: #8A6B63;
@@ -150,17 +151,17 @@
     <div class="heading">GALERI TAMU</div>
     <h1>Ratna<span class="amp">&amp;</span>Nuryadi</h1>
     <div class="date">29 . 01 . 2027</div>
-    <p class="sub">Cari fotomu, ketuk <b>Pilih</b>, lalu <b>Download</b>. Tiap HP bisa mengunduh <b><span id="lim-text">8</span> foto</b> ya 💗</p>
+    <p class="sub">Cari fotomu, ketuk <b>Pilih</b>, lalu <b>Download</b>. Tiap HP bisa mengunduh <b><span id="lim-text">5</span> kali</b> ya 💗</p>
   </header>
 
   <div class="bar-top">
     <div class="bar-in">
-      <div class="quota" id="quota"><span class="dots" id="dots"></span><span>Sisa unduhan: <b id="left">8/8</b></span></div>
+      <div class="quota" id="quota"><span class="dots" id="dots"></span><span>Sisa unduhan: <b id="left">5/5</b></span></div>
       <span class="count" id="count"></span>
       <button type="button" class="btn-sel" id="btn-sel">Pilih</button>
     </div>
   </div>
-  <div class="note" id="note-full" hidden><div><b>Jatah unduhan HP ini sudah habis (<span class="lim">8</span>/<span class="lim">8</span>) 🥺</b> Kamu tetap bisa melihat semua foto, dan foto yang sudah pernah kamu unduh masih bisa diunduh ulang.</div></div>
+  <div class="note" id="note-full" hidden><div><b>Jatah unduhan HP ini sudah habis (<span class="lim">5</span>/<span class="lim">5</span>) 🥺</b> Kamu tetap bisa melihat semua foto di galeri ini.</div></div>
 
   <main>
     <div class="state" id="loading"><div class="spin"></div><p>Memuat foto…</p></div>
@@ -208,10 +209,8 @@
   (function () {
     "use strict";
     const CONFIG = { apiUrl: "https://br-raspy-boat-bi9ymbbr-api.compute.c-5.ap-southeast-1.aws.neon.tech", supabaseUrl: "", supabaseAnonKey: "", table: "photos" };
-    const LIMIT = 8;                       // jatah unduhan per HP (unik per foto)
-    const LS_DL = "photobooth-rnjawa-galeri-dl-v1";
-    const CK_DL = "pb_rn_gdl";
     const POLL_MS = 20000;
+    let LIMIT = (window.PBLimits && PBLimits.downloadLimit()) || 5;
     const $ = (id) => document.getElementById(id);
     const q = new URLSearchParams(location.search);
 
@@ -226,29 +225,18 @@
     }
     let targetId = q.get("id") || (q.get("f") ? codeToId(q.get("f")) : null);
 
-    /* ---------- jatah unduhan (localStorage + cookie cadangan) ---------- */
-    const downloaded = new Set();
-    function loadDownloaded() {
-      try { (JSON.parse(localStorage.getItem(LS_DL) || "[]") || []).forEach((id) => downloaded.add(String(id))); } catch (e) {}
-      try {
-        const m = document.cookie.match(/(?:^|; )pb_rn_gdl=([^;]*)/);
-        if (m) decodeURIComponent(m[1]).split(",").filter(Boolean).forEach((id) => downloaded.add(id));
-      } catch (e) {}
+    /* ---------- jatah unduhan (PBLimits: localStorage + cookie + IndexedDB) ---------- */
+    async function loadDownloaded() {
+      if (window.PBLimits) {
+        await PBLimits.loadDownloads();
+        LIMIT = PBLimits.downloadLimit();
+      }
     }
-    function saveDownloaded() {
-      const arr = [...downloaded];
-      try { localStorage.setItem(LS_DL, JSON.stringify(arr)); } catch (e) {}
-      try {
-        const exp = new Date(Date.now() + 120 * 864e5);
-        document.cookie = CK_DL + "=" + encodeURIComponent(arr.join(",")) + "; expires=" + exp.toUTCString() + "; path=/; SameSite=Lax";
-      } catch (e) {}
-    }
-    const remaining = () => Math.max(0, LIMIT - downloaded.size);
-    const isFree = (id) => downloaded.has(id);
-    const newSelected = () => [...selected].filter((id) => !isFree(id)).length;
-    function markDownloaded(id) {
-      if (downloaded.has(id)) return;
-      downloaded.add(id); saveDownloaded();
+    const remaining = () => window.PBLimits ? PBLimits.remainingDownloads(false) : Math.max(0, LIMIT);
+    const isFree = (id) => false; // setiap aksi unduh/simpan memakai 1 jatah
+    const newSelected = () => selected.size;
+    async function markDownloaded(id) {
+      if (window.PBLimits) await PBLimits.consumeDownload(false);
       const t = tiles.get(id);
       if (t) setGot(t.el, true);
     }
@@ -289,7 +277,7 @@
     function renderSel() {
       const n = selected.size, nn = newSelected();
       $("sel-n").textContent = n + " foto dipilih";
-      $("sel-sub").textContent = n ? (nn ? "memakai " + nn + " dari sisa " + remaining() + " jatah" : "unduh ulang — tidak memakai jatah") : "ketuk foto untuk memilih";
+      $("sel-sub").textContent = n ? ("memakai " + n + " dari sisa " + remaining() + " jatah") : "ketuk foto untuk memilih";
       $("dl-label").textContent = "Download (" + n + ")";
       $("btn-dl").disabled = !n || busy;
       $("btn-share").disabled = !n || busy;
@@ -304,8 +292,8 @@
     }
     function limitMsg() {
       return remaining() <= 0
-        ? "Jatah unduhan HP ini sudah habis (" + LIMIT + "/" + LIMIT + ") 🥺 Foto yang sudah pernah kamu unduh masih bisa diunduh ulang."
-        : "Sisa jatah unduhanmu tinggal " + remaining() + " foto ya 💗 Batalkan pilihan lain dulu kalau mau ganti.";
+        ? ((window.PBLimits && PBLimits.messageExhausted()) || ("Jatah unduhan HP ini sudah habis (" + LIMIT + "/" + LIMIT + ") 🥺 Kamu tetap bisa melihat semua foto."))
+        : "Sisa jatah unduhanmu tinggal " + remaining() + " kali ya. Batalkan pilihan lain dulu kalau mau ganti.";
     }
     function trySelect(id, quiet) {
       if (selected.has(id)) return true;
@@ -444,10 +432,10 @@
           try {
             const blob = await getBlob(row);
             saveBlob(blob, fileName(row));
-            markDownloaded(row.id); done++;
+            await markDownloaded(row.id); done++;
           } catch (e) {
             if (list.length === 1) {
-              markDownloaded(row.id); done++;
+              await markDownloaded(row.id); done++;
               window.open(row.public_url, "_blank", "noopener");
             }
           }
@@ -471,7 +459,7 @@
         if (!(navigator.canShare && navigator.canShare({ files }))) throw new Error("noshare");
         toast("Pilih “Simpan Gambar” ya 💗", 3000);
         await navigator.share({ files, title: "Foto photobooth Ratna & Nuryadi", text: "#MenujuRidhaRN" });
-        rows.forEach((r) => markDownloaded(r.id));
+        for (const r of rows) await markDownloaded(r.id);
         toast("Yay! " + rows.length + " foto tersimpan 💗 Sisa jatah: " + remaining() + "/" + LIMIT, 4200);
         setSelecting(false);
       } catch (e) {
@@ -490,6 +478,7 @@
       if (!(window.PBSync && PBSync.enabled()) && !client) return;
       try {
         const rows = await fetchAll();
+        if (rows && rows.notModified) return;
         const ids = new Set(rows.map((r) => String(r.id)));
         [...tiles.keys()].forEach((id) => { if (!ids.has(id)) removePhoto(id); });
         rows.slice().reverse().forEach((r) => addPhoto(r, loaded));
@@ -558,14 +547,16 @@
 
     try { if (navigator.canShare && navigator.canShare({ files: [new File([""], "x.jpg", { type: "image/jpeg" })] }) && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) $("btn-share").hidden = false; } catch (e) {}
 
-    loadDownloaded();
-    renderQuota();
-    try { client = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey); } catch (e) { client = null; }
-    if ((window.PBSync && PBSync.enabled()) || client) { poll(); subscribe(); setInterval(poll, POLL_MS); }
-    else { $("loading").hidden = true; $("error").hidden = false; }
+    (async function boot() {
+      await loadDownloaded();
+      renderQuota();
+      try { client = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey); } catch (e) { client = null; }
+      if ((window.PBSync && PBSync.enabled()) || client) { poll(); subscribe(); setInterval(poll, POLL_MS); }
+      else { $("loading").hidden = true; $("error").hidden = false; }
+    })();
 
     window.__galeri = {
-      state: () => ({ photos: photos.length, remaining: remaining(), downloaded: [...downloaded], selected: [...selected], selecting, lbId, loaded }),
+      state: () => ({ photos: photos.length, remaining: remaining(), used: window.PBLimits && PBLimits.used(), selected: [...selected], selecting, lbId, loaded }),
       simulateNew: (row) => addPhoto(row, true),
       simulateDelete: (id) => removePhoto(id),
       LIMIT

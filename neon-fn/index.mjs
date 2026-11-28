@@ -22,7 +22,8 @@ function cors(req, extra = {}) {
   return {
     "access-control-allow-origin": origin === "null" ? "*" : origin,
     "access-control-allow-methods": "GET, POST, OPTIONS",
-    "access-control-allow-headers": "content-type",
+    "access-control-allow-headers": "content-type, if-none-match",
+    "access-control-expose-headers": "etag, ETag",
     "access-control-max-age": "86400",
     vary: "Origin",
     ...extra,
@@ -98,11 +99,20 @@ function sniff(buf) {
   ) {
     return "image/png";
   }
+  if (
+    buf.length >= 12 &&
+    buf[0] === 0x52 && buf[1] === 0x49 && buf[2] === 0x46 && buf[3] === 0x46 &&
+    buf[8] === 0x57 && buf[9] === 0x45 && buf[10] === 0x42 && buf[11] === 0x50
+  ) {
+    return "image/webp";
+  }
   return null;
 }
 
 function extFor(ct) {
-  return ct === "image/png" ? "png" : "jpg";
+  if (ct === "image/png") return "png";
+  if (ct === "image/webp") return "webp";
+  return "jpg";
 }
 
 async function readBody(req) {
@@ -114,20 +124,40 @@ async function readBody(req) {
 }
 
 function parseUuidFromPath(p) {
-  const m = p.match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?:\.(?:jpe?g|png))?$/i);
+  const m = p.match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?:\.(?:jpe?g|png|webp))?$/i);
   return m ? m[1].toLowerCase() : null;
 }
 
 async function listPhotos(req) {
   const u = new URL(req.url);
   const limit = Math.min(LIST_LIMIT, Math.max(1, parseInt(u.searchParams.get("limit") || "200", 10) || 200));
+  const meta = await sql()`
+    select count(*)::int as n, max(created_at) as latest, max(id::text) as mid
+    from public.photos
+  `;
+  const m = meta[0] || {};
+  const etag = `"p${m.n || 0}-${m.latest || "0"}-${m.mid || "0"}-${limit}"`;
+  const inm = req.headers.get("if-none-match");
+  if (inm && inm === etag) {
+    return new Response(null, {
+      status: 304,
+      headers: {
+        ...cors(req),
+        etag,
+        "cache-control": "private, no-cache",
+      },
+    });
+  }
   const rows = await sql()`
     select id, created_at, file_path, public_url, layout, theme, content_type
     from public.photos
     order by created_at desc
     limit ${limit}
   `;
-  return json(req, { ok: true, photos: rows });
+  return json(req, { ok: true, photos: rows }, 200, {
+    etag,
+    "cache-control": "private, no-cache",
+  });
 }
 
 async function getPhoto(req, id) {

@@ -13,3 +13,4 @@ finalize-after-sql.sh
 neon-fn/bundle.mjs
 .env
 .env.*
+neon-fn/node_modules/

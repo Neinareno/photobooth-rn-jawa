@@ -528,6 +528,7 @@
         status.textContent = "Memuat foto…";
         try {
           const data = await PBSync.listPhotos(1000);
+          if (data && data.notModified) { status.textContent = ""; return; }
           photos = (data || []).filter((p) => !p.file_path || String(p.file_path).startsWith("rn-jawa/"));
           note.textContent = "";
           render();

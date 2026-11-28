@@ -17,6 +17,7 @@
   <script src="filters.js"></script>
   <script src="frames.js"></script>
   <script src="sync.js"></script>
+  <script src="limits.js"></script>
   <style>
     :root {
       --bg: #E8D5B0;
@@ -698,7 +699,7 @@
         <p id="home-time" class="reveal d7">Resepsi 12.00 WIB - 15.00 WIB</p>
         <p id="home-venue" class="reveal d7">Kp. Gendong RT.005/RW.003, Mangunharjo, Kec. Tembalang</p>
         <button type="button" class="btn-primary reveal d8" id="btn-start">MULAI FOTO</button>
-        <p id="home-quota" class="home-quota reveal d8">Sisa 8 dari 8 foto</p>
+        <p id="home-quota" class="home-quota reveal d8">Sisa 5 dari 5 foto</p>
       </div>
       <div id="opening-curtain" class="curtain" aria-hidden="true">
         <div class="curtain-panel left"></div>
@@ -917,7 +918,8 @@ const DEFAULTS = {
   supabaseAnonKey: "",
   customLogo: "",
   customOverlay: "",
-  quotaLimit: 8,
+  quotaLimit: 5,
+  downloadLimit: 5,
   frame: "theta-mawar",
   filter: "soft-skin",
   hiddenFrames: []
@@ -929,7 +931,8 @@ const COOKIE_QUOTA = "pb_rnjawa_quota";
 const IDB_NAME = "photobooth-rnjawa";
 const IDB_VER = 2;
 const CANVAS_W = 1200, CANVAS_H = 1800;
-const DEFAULT_QUOTA_LIMIT = 8;
+const DEFAULT_QUOTA_LIMIT = 5;
+const DEFAULT_DOWNLOAD_LIMIT = 5;
 /* ---------- Mode Pelaminan (HP khusus di pelaminan: tanpa batas kuota) ----------
    Aktif lewat ?mode=pelaminan&k=<kunci>. Hanya hash SHA-256 kunci yang disimpan di sini.
    Setelah aktif, mode diingat di localStorage HP itu. Keluar: ?mode=tamu */
@@ -998,6 +1001,8 @@ function loadSettings() {
   if (CONFIG.supabaseAnonKey) settings.supabaseAnonKey = settings.supabaseAnonKey || CONFIG.supabaseAnonKey;
   const q = parseInt(settings.quotaLimit, 10);
   settings.quotaLimit = Number.isFinite(q) && q >= 1 ? q : DEFAULT_QUOTA_LIMIT;
+  const d = parseInt(settings.downloadLimit, 10);
+  settings.downloadLimit = Number.isFinite(d) && d >= 1 ? d : DEFAULT_DOWNLOAD_LIMIT;
 }
 
 function saveSettings() {
@@ -1092,6 +1097,41 @@ async function consumeQuota() {
 
 async function resetQuotaUsed() {
   await persistQuota(0);
+}
+
+function downloadLimit() {
+  if (window.PBLimits) return PBLimits.downloadLimit();
+  const n = parseInt(settings.downloadLimit, 10);
+  return Number.isFinite(n) && n >= 1 ? n : DEFAULT_DOWNLOAD_LIMIT;
+}
+function remainingDownloads() {
+  if (PELAMINAN) return Infinity;
+  return window.PBLimits ? PBLimits.remainingDownloads(false) : 0;
+}
+function isDownloadExhausted() { return remainingDownloads() <= 0; }
+
+async function loadDownloadsUsed() {
+  if (window.PBLimits) await PBLimits.loadDownloads();
+}
+
+function showAppToast(msg, ms) {
+  const el = $("jw-toast");
+  if (!el) { try { alert(msg); } catch (e) {} return; }
+  el.textContent = msg;
+  el.hidden = false;
+  clearTimeout(showAppToast._t);
+  showAppToast._t = setTimeout(() => { el.hidden = true; }, ms || 5200);
+}
+
+async function guestDownload(url, name) {
+  if (!url) return false;
+  if (isDownloadExhausted()) {
+    showAppToast((window.PBLimits && PBLimits.messageExhausted()) || "Jatah unduhan di perangkat ini sudah habis.");
+    return false;
+  }
+  downloadDataURL(url, name);
+  if (window.PBLimits && !PELAMINAN) await PBLimits.consumeDownload(false);
+  return true;
 }
 
 async function rememberLastResultFromStore() {
@@ -1273,7 +1313,7 @@ async function refreshDock() {
     dl.className = "g-dl";
     dl.textContent = "UNDUH";
     el.appendChild(dl);
-    el.addEventListener("click", () => downloadDataURL(it.dataURL, fileNameFor(it)));
+    el.addEventListener("click", () => guestDownload(it.dataURL, fileNameFor(it)));
     scroller.appendChild(el);
   });
 }
@@ -2345,6 +2385,50 @@ async function uploadPhotoOnline(rec, blob) {
   return uploadToSupabase(client, rec, blob);
 }
 
+async function compressForUpload(src) {
+  /* Salinan untuk server saja. Hasil lokal tetap kualitas penuh. Target ~100–130 KB. */
+  const TARGET = 130 * 1024;
+  const MIN_LONG = 880;
+  let longSide = 1280;
+  const img = await new Promise((resolve, reject) => {
+    const im = new Image();
+    im.onload = () => resolve(im);
+    im.onerror = () => reject(new Error("decode"));
+    if (typeof Blob !== "undefined" && src instanceof Blob) im.src = URL.createObjectURL(src);
+    else im.src = src;
+  });
+  const ow = img.naturalWidth || img.width, oh = img.naturalHeight || img.height;
+  let best = null, meta = { width: ow, height: oh, quality: 1, type: "image/jpeg" };
+  const qualities = [0.82, 0.78, 0.74, 0.7, 0.66, 0.62, 0.58];
+  while (longSide >= MIN_LONG) {
+    const scale = Math.min(1, longSide / Math.max(ow, oh, 1));
+    const w = Math.max(1, Math.round(ow * scale));
+    const h = Math.max(1, Math.round(oh * scale));
+    const c = document.createElement("canvas");
+    c.width = w; c.height = h;
+    const ctx = c.getContext("2d", { alpha: false });
+    ctx.fillStyle = "#F8EEE6";
+    ctx.fillRect(0, 0, w, h);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(img, 0, 0, w, h);
+    for (let i = 0; i < qualities.length; i++) {
+      const q = qualities[i];
+      const blob = await canvasToBlob(c, "image/jpeg", q);
+      if (!blob) continue;
+      best = blob;
+      meta = { width: w, height: h, quality: q, type: blob.type, bytes: blob.size };
+      if (blob.size <= TARGET) {
+        globalThis.__lastUpload = meta;
+        return blob;
+      }
+    }
+    longSide -= 140;
+  }
+  globalThis.__lastUpload = meta;
+  return best;
+}
+
 async function handleUpload(rec, blob) {
   if (!onlineEnabled() && !getSupabase()) {
     $("qr-status").textContent = "Foto tersimpan di perangkat ini. Penyimpanan online belum terhubung, jadi kode QR belum tersedia.";
@@ -2352,6 +2436,10 @@ async function handleUpload(rec, blob) {
   }
   $("qr-status").textContent = "Mengunggah foto…";
   try {
+    try {
+      const slim = await compressForUpload(blob);
+      if (slim && slim.size) { blob = slim; rec.uploadBytes = slim.size; rec.uploadType = slim.type; }
+    } catch (e) { console.warn("compress upload", e); }
     const uploaded = await uploadPhotoOnline(rec, blob);
     rec.publicUrl = uploaded.public_url;
     lastResult.publicUrl = uploaded.public_url;
@@ -2409,8 +2497,12 @@ async function processQueue() {
   const items = await idbGetAll("queue");
   for (const it of items) {
     try {
-      const blob = await (await fetch(it.dataURL)).blob();
+      let blob = await (await fetch(it.dataURL)).blob();
       const rec = it.rec || it;
+      try {
+        const slim = await compressForUpload(blob);
+        if (slim && slim.size) blob = slim;
+      } catch (e) {}
       const uploaded = await uploadPhotoOnline(rec, blob);
       rec.publicUrl = uploaded.public_url;
       await idbPut("photos", rec);
@@ -2452,7 +2544,7 @@ function bind() {
   });
   $("btn-switch-cam").addEventListener("click", switchCamera);
   const dl = () => {
-    if (lastResult.dataURL) downloadDataURL(lastResult.dataURL, fileNameFor(lastResult.rec || { createdAt: Date.now() }));
+    if (lastResult.dataURL) guestDownload(lastResult.dataURL, fileNameFor(lastResult.rec || { createdAt: Date.now() }));
   };
   $("btn-download").addEventListener("click", dl);
   $("btn-print").addEventListener("click", () => window.print());
@@ -2472,9 +2564,10 @@ function bind() {
   document.addEventListener("fullscreenchange", syncFsIcon);
   window.addEventListener("online", () => processQueue());
   window.addEventListener("storage", async (e) => {
-    if (e.key === LS_KEY || e.key === LS_QUOTA || e.key === null) {
+    if (e.key === LS_KEY || e.key === LS_QUOTA || e.key === "photobooth-rnjawa-downloads-v1" || e.key === null) {
       loadSettings();
       await loadQuotaUsed();
+      await loadDownloadsUsed();
       renderHome();
     }
   });
@@ -2543,6 +2636,7 @@ async function init() {
   try { const el = $("home-logo"), w = staticLogoSrc(); if (el.getAttribute("src") !== w) el.src = w; } catch (e) {}
   await prepareAssets();
   await loadQuotaUsed();
+  await loadDownloadsUsed();
   await rememberLastResultFromStore();
   renderHome();
   refreshDock();
@@ -2575,6 +2669,8 @@ window.__photobooth = {
   getPhotos: () => idbGetAll("photos"),
   handleUpload,
   getQuota: () => ({ used: quotaUsed, limit: quotaLimit(), remaining: remainingQuota(), pelaminan: PELAMINAN, pelaminanSaved }),
+  getDownloads: () => window.PBLimits && ({ used: PBLimits.used(), limit: PBLimits.downloadLimit(), remaining: remainingDownloads() }),
+  compressForUpload,
   setQuotaUsed: (n) => persistQuota(n),
   resetQuota: resetQuotaUsed,
   switchCamera,
@@ -2593,6 +2689,7 @@ window.__photobooth = {
 init().catch((e) => console.error(e));
 
   </script>
+  <div id="jw-toast" class="jw-toast" hidden role="status" aria-live="polite"></div>
   <script src="ornamen-jawa.js" defer></script>
 </body>
 </html>

@@ -14,6 +14,7 @@
   <script src="sync.js"></script>
   <script src="ornamen-jawa.js" defer></script>
   <script src="pin.js"></script>
+  <script src="limits.js"></script>
   <script src="filters.js"></script>
   <script src="frames.js"></script>
   <style>
@@ -237,7 +238,7 @@
             <button type="button" class="btn-secondary" data-copy="link-galeri" style="flex:0 0 auto;">SALIN</button>
             <a class="btn-secondary" id="open-galeri" target="_blank" rel="noopener" style="flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;">BUKA</a>
           </div>
-          <p class="hint">Tamu bisa melihat semua foto &amp; mengunduh maksimal <b>8 foto per HP</b> (unduh ulang foto yang sama tidak dihitung). Kode QR “Scan &amp; download fotomu” di layar display membuka galeri ini dengan foto yang sedang tampil langsung terpilih.</p>
+          <p class="hint">Tamu bisa melihat semua foto &amp; mengunduh maksimal <b>5 kali per HP</b> (setiap unduhan atau simpan dihitung, termasuk dari layar hasil). Kode QR “Scan &amp; download fotomu” di layar display membuka galeri ini dengan foto yang sedang tampil langsung terpilih.</p>
         </div>
         <div class="field">
           <label for="link-pelaminan">Photobooth HP Pelaminan (tanpa batas kuota) — RAHASIA</label>
@@ -343,10 +344,17 @@
         <div class="field">
           <label for="inp-quota-limit">Batas foto per perangkat</label>
           <input type="number" id="inp-quota-limit" min="1" max="999" step="1" />
-          <p class="hint">Bawaan 8 sesi (hasil foto yang selesai tersimpan) per perangkat. Jika photobooth dipakai di satu tablet bersama, naikkan batas ini atau reset kuota setelah setiap tamu.</p>
+          <p class="hint">Bawaan 5 sesi (hasil foto yang selesai tersimpan) per perangkat. Jika photobooth dipakai di satu tablet bersama, naikkan batas ini atau reset kuota setelah setiap tamu. Mode pelaminan tetap tanpa batas.</p>
         </div>
+        <div class="field">
+          <label for="inp-download-limit">Batas unduhan per perangkat</label>
+          <input type="number" id="inp-download-limit" min="1" max="999" step="1" />
+          <p class="hint">Bawaan 5 unduhan (setiap aksi unduh/simpan di layar hasil, galeri tamu, atau /unduh). Galeri pengantin (PIN) dan mode pelaminan tidak dibatasi.</p>
+        </div>
+        <div class="quota-box" id="download-box">Memuat jatah unduhan…</div>
         <div class="actions">
           <button type="button" class="btn-secondary" id="btn-quota-reset">RESET KUOTA PERANGKAT INI</button>
+          <button type="button" class="btn-secondary" id="btn-download-reset">RESET UNDUHAN PERANGKAT INI</button>
         </div>
       </div>
 
@@ -395,7 +403,8 @@
     const COOKIE_QUOTA = "pb_rnjawa_quota";
     const IDB_NAME = "photobooth-rnjawa";
     const IDB_VER = 2;
-    const DEFAULT_QUOTA_LIMIT = 8;
+    const DEFAULT_QUOTA_LIMIT = 5;
+    const DEFAULT_DOWNLOAD_LIMIT = 5;
     const DEFAULTS = {
       heading: "THE WEDDING OF",
       names: "Ratna Prastyani & Nuryadi",
@@ -414,7 +423,8 @@
       supabaseAnonKey: "",
       customLogo: "",
       customOverlay: "",
-      quotaLimit: 8,
+      quotaLimit: 5,
+      downloadLimit: 5,
       frame: "theta-mawar",
       filter: "soft-skin",
       hiddenFrames: []
@@ -457,6 +467,8 @@
       } catch (e) { settings = { ...DEFAULTS }; }
       const q = parseInt(settings.quotaLimit, 10);
       settings.quotaLimit = Number.isFinite(q) && q >= 1 ? q : DEFAULT_QUOTA_LIMIT;
+      const d = parseInt(settings.downloadLimit, 10);
+      settings.downloadLimit = Number.isFinite(d) && d >= 1 ? d : DEFAULT_DOWNLOAD_LIMIT;
     }
     function saveSettings() {
       try { localStorage.setItem(LS_KEY, JSON.stringify({ ...settings })); } catch (e) {}
@@ -534,11 +546,27 @@
       const n = parseInt(settings.quotaLimit, 10);
       return Number.isFinite(n) && n >= 1 ? n : DEFAULT_QUOTA_LIMIT;
     }
+    function downloadLimit() {
+      if (window.PBLimits) return PBLimits.downloadLimit();
+      const n = parseInt(settings.downloadLimit, 10);
+      return Number.isFinite(n) && n >= 1 ? n : DEFAULT_DOWNLOAD_LIMIT;
+    }
+    async function renderDownloads() {
+      const box = $("download-box");
+      if (!box) return;
+      if (window.PBLimits) {
+        const used = PBLimits.used();
+        const limit = PBLimits.downloadLimit();
+        box.textContent = "Unduhan terpakai " + used + " dari " + limit + " di perangkat ini. Sisa " + Math.max(0, limit - used) + ".";
+      }
+    }
+
     function renderQuota() {
       const limit = quotaLimit();
       const left = Math.max(0, limit - quotaUsed);
       $("quota-box").textContent = "Terpakai " + quotaUsed + " dari " + limit + " foto di perangkat ini. Sisa " + left + ".";
     }
+    function renderLimits() { renderQuota(); renderDownloads(); }
 
     function fillForm() {
       $("inp-heading").value = settings.heading || "";
@@ -555,6 +583,7 @@
       $("inp-sb-url").value = settings.supabaseUrl || "";
       $("inp-sb-key").value = settings.supabaseAnonKey || "";
       $("inp-quota-limit").value = String(quotaLimit());
+      if ($("inp-download-limit")) $("inp-download-limit").value = String(downloadLimit());
       document.querySelectorAll("[data-layout]").forEach((b) => {
         b.classList.toggle("selected", b.dataset.layout === settings.layout);
       });
@@ -649,6 +678,8 @@
       if ($("sel-filter")) settings.filter = $("sel-filter").value || PBFilters.DEFAULT;
       const q = parseInt($("inp-quota-limit").value, 10);
       settings.quotaLimit = Number.isFinite(q) && q >= 1 ? q : DEFAULT_QUOTA_LIMIT;
+      const dl = parseInt($("inp-download-limit") && $("inp-download-limit").value, 10);
+      settings.downloadLimit = Number.isFinite(dl) && dl >= 1 ? dl : DEFAULT_DOWNLOAD_LIMIT;
     }
 
     function fileToDataURL(file) {
@@ -665,6 +696,8 @@
       $("app").hidden = false;
       loadSettings();
       await loadQuotaUsed();
+      if (window.PBLimits) await PBLimits.loadDownloads();
+      renderDownloads();
       fillForm();
     }
 
@@ -728,6 +761,7 @@
       readForm();
       saveSettings();
       $("inp-quota-limit").value = String(quotaLimit());
+      if ($("inp-download-limit")) $("inp-download-limit").value = String(downloadLimit());
       renderQuota();
       $("save-status").textContent = "Pengaturan disimpan di perangkat ini. Buka ulang photobooth agar tampilan tamu mengikuti perubahan.";
     });
@@ -736,10 +770,23 @@
       await persistQuota(0);
       $("save-status").textContent = "Kuota perangkat ini sudah direset. Tamu dapat memakai photobooth lagi.";
     });
+    const btnDlReset = $("btn-download-reset");
+    if (btnDlReset) btnDlReset.addEventListener("click", async () => {
+      if (!confirm("Reset jatah unduhan di perangkat ini ke nol?")) return;
+      if (window.PBLimits) await PBLimits.resetDownloads();
+      await renderDownloads();
+      $("save-status").textContent = "Jatah unduhan perangkat ini sudah direset.";
+    });
     $("inp-quota-limit").addEventListener("change", () => {
       const q = parseInt($("inp-quota-limit").value, 10);
       settings.quotaLimit = Number.isFinite(q) && q >= 1 ? q : DEFAULT_QUOTA_LIMIT;
       renderQuota();
+    });
+    const inpDl = $("inp-download-limit");
+    if (inpDl) inpDl.addEventListener("change", () => {
+      const d = parseInt(inpDl.value, 10);
+      settings.downloadLimit = Number.isFinite(d) && d >= 1 ? d : DEFAULT_DOWNLOAD_LIMIT;
+      renderDownloads();
     });
 
     window.__admin = {
@@ -747,7 +794,9 @@
       openApp,
       getSettings: () => ({ ...settings }),
       getQuota: () => ({ used: quotaUsed, limit: quotaLimit() }),
-      resetQuota: () => persistQuota(0)
+      getDownloads: () => window.PBLimits && ({ used: PBLimits.used(), limit: PBLimits.downloadLimit() }),
+      resetQuota: () => persistQuota(0),
+      resetDownloads: () => window.PBLimits && PBLimits.resetDownloads()
     };
 
     if (sessionStorage.getItem("pb-rn-admin-ok") === "1") openApp();

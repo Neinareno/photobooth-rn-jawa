@@ -250,6 +250,11 @@
     async function poll() {
       try {
         const rows = await fetchAll();
+        if (rows && rows.notModified) {
+          if (rtState !== "live") rtState = "poll";
+          setStatus();
+          return;
+        }
         if (!rows) return;
         const ids = new Set(rows.map((r) => r.id));
         // hapus yang sudah tidak ada
@@ -302,7 +307,7 @@
         im.src = url;
       });
       cache.set(url, pr);
-      if (cache.size > 40) cache.delete(cache.keys().next().value);
+      if (cache.size > 120) cache.delete(cache.keys().next().value);
       return pr;
     }
 
@@ -347,7 +352,7 @@
       const incoming = slides[nextIdx];
       const outgoing = activeIdx >= 0 ? slides[activeIdx] : null;
       const img = incoming.querySelector("img");
-      img.src = url;
+      if (img.getAttribute("src") !== url) img.src = url;
       incoming.querySelector(".ctext").textContent = special ? ("Diabadikan " + fmtTime(p.created_at)) : ("Diabadikan " + fmtTime(p.created_at));
       const t = special ? "new" : pickTransition();
       const hold = (special ? NEW_HOLD : INTERVAL) + 2000;

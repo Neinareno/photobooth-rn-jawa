@@ -46,7 +46,7 @@ Buka sekali di HP pelaminan; mode tersimpan di HP itu. Kembali ke mode tamu: `ht
 3. Setelah hitungan 3–2–1, hasil foto itu tampil dulu. Tamu bisa **Ulangi foto ini** atau menekan **Foto ke-2** / **Foto ke-3** (hitungan mundur dimulai lagi). Setelah foto terakhir, tekan **Lihat hasil**.
 4. Di pratinjau akhir, filter/bingkai masih bisa diganti. Tekan **SIMPAN FOTO** atau **BATAL / ULANGI**.
 5. Setelah tersimpan: **UNDUH** (PNG 1200×1800), **CETAK**, **FOTO LAGI**, atau **BERANDA**.
-6. Setiap perangkat tamu dibatasi **8 sesi foto**. Mode pelaminan tidak terbatas.
+6. Setiap perangkat tamu dibatasi **5 sesi foto** dan **5 kali unduhan** (setiap unduh/simpan di layar hasil, galeri tamu, atau `/unduh` dihitung). Mode pelaminan dan galeri pengantin (PIN) tidak dibatasi. Admin dapat mengubah atau mereset batas per perangkat.
 
 ---
 
@@ -65,7 +65,7 @@ Filter tetap sama seperti sebelumnya (bawaan: Soft Skin). Semua pengaturan (term
 - Pengaturan dan kuota memakai kunci `localStorage` / IndexedDB sendiri (`photobooth-rnjawa-…`), jadi tidak tercampur dengan photobooth Booth Media jika dibuka di perangkat yang sama.
 - Foto final diunggah ke **backend Neon baru** (proyek `photobooth-rn-jawa`, terpisah dari Supabase Booth Media). Tidak ada kunci rahasia di situs; halaman GitHub Pages hanya memakai URL API publik.
 - Setelah tamu menekan simpan, foto muncul di [layar display / TV](https://photobooth-ratna-nuryadi-jawa.pages.dev/display) (diperbarui tiap beberapa detik, plus kode QR unduh) dan di [galeri](https://photobooth-ratna-nuryadi-jawa.pages.dev/galeri) / [galeri tamu](https://photobooth-ratna-nuryadi-jawa.pages.dev/galeri-tamu).
-- Foto juga tetap disimpan di perangkat booth (IndexedDB) dan bisa diunduh atau dicetak di tempat. Jika unggahan gagal, antrian akan dicoba lagi saat daring.
+- Foto juga tetap disimpan di perangkat booth (IndexedDB) dalam kualitas penuh, dan bisa diunduh atau dicetak di tempat. Salinan yang diunggah ke server dikompresi (sekitar 100–130 KB) agar ~3000 foto muat di paket Neon gratis. Jika unggahan gagal, antrian akan dicoba lagi saat daring. Layar TV memakai tembolok gambar (header cache jangka panjang) agar polling 5 detik tidak mengunduh ulang foto yang sama.
 - Hapus foto di galeri pengantin tetap memakai PIN `290127` (diverifikasi di server, dengan batas percobaan salah).
 
 ---
