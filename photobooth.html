@@ -17,6 +17,7 @@
   <script src="filters.js"></script>
   <script src="frames.js"></script>
   <script src="sync.js"></script>
+  <script src="pin.js"></script>
   <style>
     :root {
       --bg: #E8D5B0;
@@ -806,6 +807,19 @@
   </div>
 
   <div id="pelaminan-badge" class="pelaminan-badge" hidden><i></i>Mode Pelaminan • tanpa batas</div>
+  <div id="pelaminan-gate" class="pelaminan-gate" hidden>
+    <div class="gate-card">
+      <div class="gunungan" aria-hidden="true">
+        <svg viewBox="0 0 80 110" width="40" height="54" fill="currentColor"><path d="M40 4c1.2 0 6.5 9 11 22 3.8 11 6.2 22 3.2 30 8 3 12.5 11 8 20 8 3 6 12-2 18 6 4 4 12-6 16H26c-10-4-12-12-6-16-8-6-10-15-2-18-4.5-9 0-17 8-20-3-8-.6-19 3.2-30C33.5 13 38.8 4 40 4z"/></svg>
+      </div>
+      <h2>MODE PELAMINAN</h2>
+      <p>Masukkan PIN untuk membuka photobooth tanpa batas kuota di perangkat ini.</p>
+      <div class="gate-err" id="pel-pin-err"></div>
+      <input type="password" id="pel-pin" inputmode="numeric" maxlength="12" placeholder="PIN" autocomplete="off" />
+      <button type="button" class="btn-primary" id="pel-pin-btn">MASUK</button>
+      <p class="hint" style="margin-top:16px">Mode akan tersimpan di HP ini. Untuk kembali ke mode tamu, buka tautan <a href="?mode=tamu">?mode=tamu</a>.</p>
+    </div>
+  </div>
   <div id="screen-quota" class="screen">
     <div class="home-stage">
       <div class="home-frame">
@@ -931,38 +945,135 @@ const IDB_VER = 2;
 const CANVAS_W = 1200, CANVAS_H = 1800;
 const DEFAULT_QUOTA_LIMIT = 8;
 /* ---------- Mode Pelaminan (HP khusus di pelaminan: tanpa batas kuota) ----------
-   Aktif lewat ?mode=pelaminan&k=<kunci>. Hanya hash SHA-256 kunci yang disimpan di sini.
-   Setelah aktif, mode diingat di localStorage HP itu. Keluar: ?mode=tamu */
-const PELAMINAN_HASH = "9836eebd5d0d9b92ab15ea0e94ab26946d90989d15c69a81324545bffb8970ee";
+   Aktif lewat ?mode=pelaminan, dibuka dengan PIN yang sama (cek server PBPin/PBSync).
+   Parameter k lama tidak lagi membuka mode secara otomatis. Setelah PIN benar,
+   mode diingat di localStorage HP itu. Keluar: ?mode=tamu */
 const LS_PELAMINAN = "photobooth-rnjawa-pelaminan-v1";
+const LS_PELAMINAN_OK = "pin-ok";
 const PELAMINAN_AUTOBACK_S = 5;
 let PELAMINAN = false;
-async function sha256Hex(text) {
-  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(String(text)));
-  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+
+function applyPelaminan(on) {
+  PELAMINAN = !!on;
+  document.body.classList.toggle("pelaminan", PELAMINAN);
+  const b = document.getElementById("pelaminan-badge");
+  if (b) b.hidden = !PELAMINAN;
 }
+
+function pelaminanGateEl() { return document.getElementById("pelaminan-gate"); }
+
+function showPelaminanGate() {
+  const g = pelaminanGateEl();
+  if (g) { g.hidden = false; g.removeAttribute("hidden"); }
+  const inp = document.getElementById("pel-pin");
+  if (inp) setTimeout(() => { try { inp.focus(); } catch (e) {} }, 200);
+}
+
+function hidePelaminanGate() {
+  const g = pelaminanGateEl();
+  if (g) g.hidden = true;
+}
+
+function stripPelaminanKeyFromUrl() {
+  try {
+    const u = new URL(location.href);
+    if (!u.searchParams.has("k")) return;
+    u.searchParams.delete("k");
+    const q = u.searchParams.toString();
+    history.replaceState(null, "", u.pathname + (q ? "?" + q : "") + u.hash);
+  } catch (e) {}
+}
+
+function isPelaminanPersisted() {
+  try { return localStorage.getItem(LS_PELAMINAN) === LS_PELAMINAN_OK; } catch (e) { return false; }
+}
+
+function persistPelaminan() {
+  try { localStorage.setItem(LS_PELAMINAN, LS_PELAMINAN_OK); } catch (e) {}
+  applyPelaminan(true);
+}
+
+function clearPelaminan() {
+  try { localStorage.removeItem(LS_PELAMINAN); } catch (e) {}
+  applyPelaminan(false);
+}
+
+async function submitPelaminanPin() {
+  const inp = document.getElementById("pel-pin");
+  const err = document.getElementById("pel-pin-err");
+  const btn = document.getElementById("pel-pin-btn");
+  const pin = String((inp && inp.value) || "").trim();
+  if (err) err.textContent = "";
+  if (!pin) {
+    if (err) err.textContent = (window.PBPin && PBPin.message({ error: "empty" })) || "Masukkan PIN terlebih dahulu.";
+    return;
+  }
+  if (btn) { btn.disabled = true; btn.textContent = "MEMERIKSA…"; }
+  let res;
+  try {
+    if (window.PBPin) res = await PBPin.verify(null, pin);
+    else res = { ok: false, error: "server_unavailable" };
+  } catch (e) {
+    res = { ok: false, error: "network" };
+  }
+  if (btn) { btn.disabled = false; btn.textContent = "MASUK"; }
+  if (res && res.ok) {
+    persistPelaminan();
+    hidePelaminanGate();
+    try { if (typeof renderHome === "function") renderHome(); } catch (e) {}
+    return;
+  }
+  if (err) err.textContent = (window.PBPin && PBPin.message(res)) || "PIN tidak sesuai.";
+  if (inp) { inp.value = ""; inp.focus(); }
+}
+
+function bindPelaminanGate() {
+  const btn = document.getElementById("pel-pin-btn");
+  const inp = document.getElementById("pel-pin");
+  if (btn && !btn.dataset.bound) {
+    btn.dataset.bound = "1";
+    btn.addEventListener("click", submitPelaminanPin);
+  }
+  if (inp && !inp.dataset.bound) {
+    inp.dataset.bound = "1";
+    inp.addEventListener("keydown", (e) => { if (e.key === "Enter") submitPelaminanPin(); });
+  }
+}
+
 async function resolvePelaminan() {
-  let on = false;
+  bindPelaminanGate();
   try {
     const u = new URLSearchParams(location.search);
     const mode = (u.get("mode") || "").toLowerCase();
     if (mode === "tamu" || mode === "normal") {
-      localStorage.removeItem(LS_PELAMINAN);
-    } else {
-      const key = mode === "pelaminan" && u.get("k") ? u.get("k") : localStorage.getItem(LS_PELAMINAN);
-      if (key && crypto && crypto.subtle && (await sha256Hex(key)) === PELAMINAN_HASH) {
-        on = true;
-        localStorage.setItem(LS_PELAMINAN, key);
-      } else if (mode !== "pelaminan" && key) {
-        localStorage.removeItem(LS_PELAMINAN);
-      }
+      clearPelaminan();
+      hidePelaminanGate();
+      return false;
     }
-  } catch (e) { on = false; }
-  PELAMINAN = on;
-  document.body.classList.toggle("pelaminan", on);
-  const b = document.getElementById("pelaminan-badge");
-  if (b) b.hidden = !on;
-  return on;
+    if (mode === "pelaminan") {
+      stripPelaminanKeyFromUrl();
+      if (isPelaminanPersisted()) {
+        applyPelaminan(true);
+        hidePelaminanGate();
+        return true;
+      }
+      applyPelaminan(false);
+      showPelaminanGate();
+      return false;
+    }
+    if (isPelaminanPersisted()) {
+      applyPelaminan(true);
+      hidePelaminanGate();
+      return true;
+    }
+    try { localStorage.removeItem(LS_PELAMINAN); } catch (e) {}
+    applyPelaminan(false);
+    hidePelaminanGate();
+    return false;
+  } catch (e) {
+    applyPelaminan(false);
+    return false;
+  }
 }
 
 let settings = { ...DEFAULTS };

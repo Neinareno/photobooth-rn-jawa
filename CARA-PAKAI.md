@@ -31,11 +31,11 @@ GitHub Pages (cadangan, tetap aktif): `https://neinareno.github.io/photobooth-rn
 
 **PIN admin & galeri:** `290127` (tanggal acara). Jangan dibagikan kepada tamu.
 
-**Mode pelaminan** (rahasia, tanpa batas kuota, khusus HP di pelaminan):
+**Mode pelaminan** (tanpa batas kuota, khusus HP di pelaminan, dilindungi PIN yang sama):
 
-`https://photobooth-ratna-nuryadi-jawa.pages.dev/?mode=pelaminan&k=rNjw7k2mQp`
+`https://photobooth-ratna-nuryadi-jawa.pages.dev/?mode=pelaminan`
 
-Buka sekali di HP pelaminan; mode tersimpan di HP itu. Kembali ke mode tamu: `https://photobooth-ratna-nuryadi-jawa.pages.dev/?mode=tamu`.
+Buka tautan itu di HP pelaminan, lalu masukkan PIN. Setelah berhasil, mode tersimpan di HP itu. Kembali ke mode tamu: `https://photobooth-ratna-nuryadi-jawa.pages.dev/?mode=tamu`. Tautan lama yang masih punya parameter `k` tetap membuka halaman yang sama, tetapi tetap meminta PIN.
 
 ---
 

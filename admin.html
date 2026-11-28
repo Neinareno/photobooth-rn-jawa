@@ -240,12 +240,13 @@
           <p class="hint">Tamu bisa melihat semua foto &amp; mengunduh maksimal <b>8 foto per HP</b> (unduh ulang foto yang sama tidak dihitung). Kode QR “Scan &amp; download fotomu” di layar display membuka galeri ini dengan foto yang sedang tampil langsung terpilih.</p>
         </div>
         <div class="field">
-          <label for="link-pelaminan">Photobooth HP Pelaminan (tanpa batas kuota) — RAHASIA</label>
+          <label for="link-pelaminan">Photobooth HP Pelaminan (tanpa batas kuota) — dilindungi PIN</label>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <input type="text" id="link-pelaminan" readonly style="flex:1 1 260px;" />
             <button type="button" class="btn-secondary" data-copy="link-pelaminan" style="flex:0 0 auto;">SALIN</button>
+            <a class="btn-secondary" id="open-pelaminan" target="_blank" rel="noopener" style="flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;">BUKA</a>
           </div>
-          <p class="hint">Buka link ini <b>sekali</b> di HP khusus pelaminan — mode tersimpan di HP itu (muat ulang tetap tanpa batas) dan tampil lencana “Mode Pelaminan • tanpa batas”. Setelah Simpan, kamera kembali otomatis dalam 5 detik untuk tamu berikutnya. Jangan bagikan link ini ke tamu. Untuk mengembalikan HP ke mode tamu biasa: buka <code>/?mode=tamu</code>.</p>
+          <p class="hint">Buka link ini di HP khusus pelaminan, lalu masukkan <b>PIN yang sama</b> dengan galeri/admin. Setelah PIN benar, mode tersimpan di HP itu (muat ulang tetap tanpa batas) dan tampil lencana “Mode Pelaminan • tanpa batas”. Setelah Simpan, kamera kembali otomatis dalam 5 detik untuk tamu berikutnya. Jangan bagikan PIN kepada tamu. Untuk mengembalikan HP ke mode tamu biasa: buka <code>/?mode=tamu</code>.</p>
         </div>
         <p class="hint" id="copy-msg" style="color:var(--gold-light);min-height:1.2em;"></p>
       </div>
@@ -430,15 +431,14 @@
     const $ = (id) => document.getElementById(id);
     /* ---------- link galeri tamu & HP pelaminan ---------- */
     (function () {
-      const PELAMINAN_KEY = "rNjw7k2mQp";
       const local = location.protocol === "file:" || /^(localhost|127\.|0\.0\.0\.0|\[::1\])/.test(location.hostname);
       const root = new URL("./", location.href).href;
       const galeri = root + (local ? "galeri-tamu.html" : "galeri-tamu");
-      const pel = root + (local ? "photobooth.html" : "") + "?mode=pelaminan&k=" + PELAMINAN_KEY;
+      const pel = root + (local ? "photobooth.html" : "") + "?mode=pelaminan";
       function fill() {
-        const g = $("link-galeri"), p = $("link-pelaminan"), o = $("open-galeri");
+        const g = $("link-galeri"), p = $("link-pelaminan"), o = $("open-galeri"), op = $("open-pelaminan");
         if (!g) return;
-        g.value = galeri; p.value = pel; o.href = galeri;
+        g.value = galeri; p.value = pel; o.href = galeri; if (op) op.href = pel;
         document.querySelectorAll("[data-copy]").forEach((b) => b.addEventListener("click", async () => {
           const inp = $(b.dataset.copy); let ok = false;
           try { await navigator.clipboard.writeText(inp.value); ok = true; } catch (e) {
