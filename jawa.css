@@ -19,10 +19,9 @@ body.jawa {
   font-family: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
 }
 
-/* Hide leftover Gen Z stickers */
+/* Hide leftover Gen Z stickers (jangan menyembunyikan gunungan tema Jawa) */
 body.jawa .gz-stk,
-body.jawa .home-frame > .corner,
-body.jawa .gunungan { display: none !important; }
+body.jawa .home-frame > .corner { display: none !important; }
 
 /* ---------- screens: soft cross-fade ---------- */
 body.jawa .screen {
@@ -396,14 +395,28 @@ body.jawa .flash {
 /* camera chrome stays slightly darker for viewfinder contrast;
    result + shot-review memakai palet beranda (peach / cream / mauve). */
 body.jawa .cam-wrap, body.jawa #screen-camera {
-  background: #3A2420 !important;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(248,238,230,0.96) 0%, #F3DCD0 55%, #E8C8B8 100%) !important;
 }
 body.jawa #screen-result {
   background:
     radial-gradient(ellipse at 50% 0%, rgba(248,238,230,0.96) 0%, rgba(243,220,208,0.96) 48%, #F3DCD0 100%) !important;
 }
 body.jawa .picker, body.jawa .cam-bottom {
-  background: linear-gradient(180deg, rgba(42,26,22,0), rgba(42,26,22,0.88));
+  background: linear-gradient(180deg, rgba(243,220,208,0), rgba(248,238,230,0.96)) !important;
+}
+body.jawa .cam-topbar {
+  background: linear-gradient(180deg, rgba(248,238,230,0.9), transparent) !important;
+}
+body.jawa .cam-stage { background: #E8D0C6 !important; }
+body.jawa #cam-viewfinder { box-shadow: 0 0 0 999px rgba(243, 220, 208, 0.45) !important; background: #F6EFE6 !important; }
+body.jawa .cam-frame-overlay { border-color: rgba(139, 79, 74, 0.5) !important; }
+body.jawa .cam-frame-overlay::after { border-color: rgba(217, 165, 160, 0.45) !important; }
+body.jawa .cam-meta { color: var(--jw-mauve) !important; text-shadow: none !important; }
+body.jawa #btn-cam-back, body.jawa #btn-switch-cam {
+  color: var(--jw-mauve) !important;
+  background: rgba(248, 238, 230, 0.9) !important;
+  border-color: rgba(139, 90, 68, 0.3) !important;
 }
 body.jawa #screen-result .result-actions,
 body.jawa .result-actions {
@@ -503,13 +516,274 @@ body.jawa #screen-quota .home-stage {
 
 body.jawa .layout-row button {
   font-family: Cinzel, "Plus Jakarta Sans", sans-serif !important;
-  background: rgba(42, 26, 22, 0.55);
-  color: #F8EEE6;
-  border: 1px solid rgba(232, 214, 196, 0.45);
+  background: rgba(248, 238, 230, 0.92) !important;
+  color: var(--jw-ink) !important;
+  border: 1px solid rgba(139, 79, 74, 0.3) !important;
 }
 body.jawa .layout-row button.on {
-  background: #8B4F4A;
-  border-color: #E8D6C4;
-  color: #F8EEE6;
+  background: #8B4F4A !important;
+  border-color: #E8D6C4 !important;
+  color: #F8EEE6 !important;
 }
 body.jawa #shot-review .btn-primary { background: #8B4F4A; color: #F8EEE6; }
+
+
+/* ---------- Palet bersama: remap sisa variabel emas/gelap & Gen Z ---------- */
+body.jawa,
+body.jawa.theme-emas-coklat,
+body.jawa.theme-gading-emas,
+body.jawa.theme-sage-emas {
+  --bg: #F3DCD0;
+  --bg-deep: #E8C8B8;
+  --bg-inner: #F8EEE6;
+  --gold: #8B4F4A;
+  --gold-light: #D9A5A0;
+  --gold-dark: #6B3A36;
+  --text: #6B3A36;
+  --text-muted: #8B5A44;
+  --heading: #6B3A36;
+  --accent: #8B4F4A;
+  --btn-text: #F8EEE6;
+  --shadow: rgba(107, 58, 54, 0.28);
+  --panel: #F8EEE6;
+  --cream: #F8EEE6;
+  --muted: #8B5A44;
+  /* galeri-tamu / unduh */
+  --pink: #F8EEE6;
+  --pink-2: #F3DCD0;
+  --berry: #8B4F4A;
+  --berry-d: #6B3A36;
+  --cocoa: #6B3A36;
+  --cocoa-2: #8B5A44;
+  --mint: #E8D5C8;
+  --lilac: #E8D0D4;
+}
+
+html:has(body.jawa),
+body.jawa {
+  background: var(--jw-peach) !important;
+  color: var(--jw-ink) !important;
+}
+
+/* Galeri pengantin: buang radial coklat tua / emas */
+body.jawa {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(248,238,230,0.95) 0%, #F3DCD0 48%, #E8C8B8 100%) !important;
+}
+body.jawa header h1,
+body.jawa header .sub,
+body.jawa header .tag { color: var(--jw-ink) !important; }
+body.jawa header .sub { color: var(--jw-mauve) !important; }
+body.jawa header .gunungan,
+body.jawa .gunungan { color: var(--jw-mauve) !important; }
+body.jawa .btn-primary {
+  background: #8B4F4A !important;
+  color: #F8EEE6 !important;
+  border-color: #8B4F4A !important;
+  background-image: none !important;
+}
+body.jawa .btn-secondary {
+  background: rgba(248, 238, 230, 0.9) !important;
+  color: var(--jw-mauve) !important;
+  border: 1px solid rgba(139, 79, 74, 0.35) !important;
+}
+body.jawa .card,
+body.jawa .fcard {
+  background: #F8EEE6 !important;
+  border-color: rgba(139, 79, 74, 0.25) !important;
+  color: var(--jw-ink) !important;
+}
+body.jawa .card .cap,
+body.jawa .fname { color: var(--jw-ink) !important; }
+body.jawa input, body.jawa select, body.jawa textarea {
+  background: #F8EEE6 !important;
+  color: var(--jw-ink) !important;
+  border-color: rgba(139, 79, 74, 0.3) !important;
+}
+
+/* Galeri tamu: buang palet pink/lilac/mint */
+html:has(body.jawa) {
+  background: var(--jw-peach) !important;
+}
+body.jawa .hstk { display: none !important; }
+body.jawa .bar-in {
+  background: rgba(248, 238, 230, 0.9) !important;
+  border-color: rgba(139, 79, 74, 0.2) !important;
+  box-shadow: 0 12px 30px -18px rgba(107, 58, 54, 0.35) !important;
+}
+body.jawa .btn-sel {
+  background: #F3DCD0 !important;
+  color: var(--jw-mauve) !important;
+  border-color: rgba(139, 79, 74, 0.3) !important;
+}
+
+/* ---------- Ornamen Jawa bersama (wayang + gunungan, palet tema) ---------- */
+.jw-ornaments {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.jw-ornaments img {
+  position: absolute;
+  user-select: none;
+  -webkit-user-drag: none;
+  filter: sepia(0.35) saturate(0.8) hue-rotate(-18deg) brightness(0.96);
+}
+.jw-orn-paper {
+  position: absolute; inset: 0;
+  opacity: 0.14;
+  background: url("assets/paper-texture.jpg") center / cover no-repeat;
+  mix-blend-mode: multiply;
+}
+.jw-orn-wayang {
+  bottom: -2vh;
+  height: min(38vh, 42vw);
+  opacity: 0.4;
+  transform-origin: 50% 100%;
+}
+.jw-orn-wayang.left { left: -2vw; animation: jwSwayL 10s var(--jw-ease) infinite; }
+.jw-orn-wayang.right { right: -2vw; animation: jwSwayR 11s var(--jw-ease) infinite; }
+.jw-orn-gunungan {
+  top: max(8px, env(safe-area-inset-top, 0px));
+  left: 50%;
+  height: min(14vh, 110px);
+  width: auto;
+  opacity: 0.32;
+  animation: jwBreathe 8s var(--jw-ease) infinite;
+}
+.jw-orn-cloud {
+  top: 4vh;
+  height: min(16vh, 140px);
+  width: auto;
+  opacity: 0.2;
+  animation: jwDrift 90s linear infinite;
+}
+.jw-orn-cloud.c2 {
+  top: 11vh;
+  height: min(12vh, 110px);
+  opacity: 0.12;
+  animation-duration: 120s;
+  animation-direction: reverse;
+  animation-delay: -20s;
+}
+
+/* Beranda sudah punya wayang full-bleed — jangan dobel */
+body:has(#screen-home.active) .jw-ornaments { opacity: 0; visibility: hidden; }
+
+@keyframes jwSwayL {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(-1.2deg); }
+  50% { transform: translate3d(6px, -8px, 0) rotate(1.5deg); }
+}
+@keyframes jwSwayR {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(1.2deg); }
+  50% { transform: translate3d(-6px, -8px, 0) rotate(-1.4deg); }
+}
+@keyframes jwBreathe {
+  0%, 100% { transform: translate3d(-50%, 0, 0) scale(1); opacity: 0.26; }
+  50% { transform: translate3d(-50%, -6px, 0) scale(1.045); opacity: 0.34; }
+}
+@keyframes jwDrift {
+  0% { transform: translate3d(-25%, 0, 0); }
+  100% { transform: translate3d(110vw, 0, 0); }
+}
+
+@media (max-width: 720px) {
+  .jw-orn-wayang { height: min(22vh, 34vw); opacity: 0.22; }
+  .jw-orn-gunungan { height: 72px; }
+  .jw-orn-cloud { height: 72px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .jw-orn-wayang, .jw-orn-gunungan, .jw-orn-cloud,
+  .jw-wayang, .jw-gunungan, .jw-cloud {
+    animation: none !important;
+  }
+  .jw-orn-gunungan, .jw-gunungan { transform: translate3d(-50%, 0, 0); }
+}
+
+
+/* Gate PIN, konfirmasi, toast, kartu gelap tersisa */
+body.jawa { isolation: isolate; }
+.jw-ornaments { z-index: 4; }
+body.jawa::before { background-image: none !important; opacity: 0 !important; }
+
+body.jawa {
+  --ink: #6B3A36;
+}
+
+body.jawa #gate {
+  background: transparent !important;
+}
+body.jawa #confirm {
+  background: rgba(107, 58, 54, 0.28) !important;
+}
+body.jawa .gate-card,
+body.jawa .confirm-card,
+body.jawa #toast,
+body.jawa .toast {
+  background: rgba(248, 238, 230, 0.96) !important;
+  border-color: rgba(139, 79, 74, 0.3) !important;
+  color: var(--jw-ink) !important;
+  box-shadow: 0 18px 40px -20px rgba(107, 58, 54, 0.4);
+}
+body.jawa .gate-card h2,
+body.jawa .confirm-card h3 { color: var(--jw-mauve) !important; }
+body.jawa .gate-card p,
+body.jawa .confirm-card p,
+body.jawa .hint,
+body.jawa .note { color: var(--jw-brown) !important; }
+body.jawa #confirm {
+  /* overlay remains a soft mauve veil if it is the backdrop itself; card sits on top */
+}
+body.jawa .card .del {
+  background: rgba(248, 238, 230, 0.9) !important;
+  border-color: rgba(139, 79, 74, 0.35) !important;
+  color: var(--jw-mauve) !important;
+}
+body.jawa .card .chk {
+  background: rgba(248, 238, 230, 0.85) !important;
+  border-color: var(--jw-mauve) !important;
+  color: var(--jw-ink) !important;
+}
+body.jawa .card.selected { outline-color: var(--jw-mauve) !important; }
+body.jawa .card.selected .chk { background: var(--jw-rose) !important; }
+body.jawa .card .cap {
+  color: #F8EEE6 !important; /* teks di atas foto */
+}
+body.jawa .fcard img { background: #E8D0C6 !important; }
+body.jawa .fcard .row label { color: var(--jw-ink) !important; }
+
+html:has(body.jawa) {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(248,238,230,0.95) 0%, #F3DCD0 48%, #E8C8B8 100%) !important;
+  background-color: #F3DCD0 !important;
+}
+
+
+/* Tab filter/bingkai: ganti emas */
+body.jawa .pick-tabs {
+  background: rgba(248, 238, 230, 0.94) !important;
+  border-color: rgba(139, 79, 74, 0.28) !important;
+}
+body.jawa .pick-tabs .pt {
+  color: var(--jw-mauve) !important;
+  background: transparent !important;
+}
+body.jawa .pick-tabs .pt.on {
+  background: #8B4F4A !important;
+  background-image: none !important;
+  color: #F8EEE6 !important;
+}
+body.jawa .pi.on .th {
+  border-color: #8B4F4A !important;
+  box-shadow: 0 0 0 3px rgba(139, 79, 74, 0.35), 0 2px 10px rgba(107, 58, 54, 0.18) !important;
+}
+body.jawa .pi.on span { color: #8B4F4A !important; }
+body.jawa .cam-error { background: rgba(243, 220, 208, 0.96) !important; }
+body.jawa .cam-error-card {
+  background: #F8EEE6 !important;
+  color: var(--jw-ink) !important;
+  border-color: rgba(139, 79, 74, 0.3) !important;
+}
+body.jawa .cam-error-card h2 { color: var(--jw-mauve) !important; }

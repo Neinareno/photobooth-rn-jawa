@@ -7,7 +7,7 @@
   --jw-mauve: #8B4F4A;
   --jw-ink: #6B3A36;
   --jw-brown: #8B5A44;
-  --jw-gold: #C4A27A;
+  --jw-gold: #A56A64;
   --jw-ease: cubic-bezier(0.4, 0, 0.2, 1);
   --font-display: "Cormorant Garamond", "Times New Roman", serif;
   --font-script: "Great Vibes", "Ms Madi", cursive;
@@ -39,14 +39,75 @@ html, body {
 .bg-layer { transition: opacity 0.8s var(--jw-ease); }
 
 .jw-decor { position: fixed; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
-.jw-paper { position: absolute; inset: 0; opacity: 0.18;
+.jw-paper { position: absolute; inset: 0; opacity: 0.16;
   background: url("assets/paper-texture.jpg") center / cover no-repeat; mix-blend-mode: multiply; }
-.jw-wayang { position: absolute; bottom: -2vh; height: min(42vh, 52vw); opacity: 0.18; filter: sepia(0.35); }
-.jw-wayang.left { left: -1.5vw; }
-.jw-wayang.right { right: -1.5vw; }
-.jw-floral { position: absolute; width: min(22vw, 28vh); opacity: 0.55; }
+.jw-decor img {
+  filter: sepia(0.4) saturate(0.78) hue-rotate(-18deg) brightness(0.96);
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.jw-wayang {
+  position: absolute; bottom: -3vh;
+  height: min(52vh, 44vw);
+  opacity: 0.34;
+  transform-origin: 50% 100%;
+  will-change: transform;
+}
+.jw-wayang.left { left: -2vw; animation: jwSwayL 9.5s var(--jw-ease) infinite; }
+.jw-wayang.right { right: -2vw; animation: jwSwayR 10.5s var(--jw-ease) infinite; }
+.jw-gunungan {
+  position: absolute;
+  top: 2.2vh; left: 50%;
+  height: min(18vh, 22vw);
+  width: auto;
+  opacity: 0.28;
+  will-change: transform, opacity;
+  animation: jwBreathe 8s var(--jw-ease) infinite;
+}
+.jw-cloud {
+  position: absolute;
+  top: 3vh;
+  height: min(20vh, 18vw);
+  width: auto;
+  opacity: 0.22;
+  will-change: transform;
+  animation: jwDrift 80s linear infinite;
+}
+.jw-cloud.c2 {
+  top: 9vh;
+  height: min(15vh, 14vw);
+  opacity: 0.16;
+  animation-duration: 110s;
+  animation-direction: reverse;
+  animation-delay: -28s;
+}
+.jw-cloud.c3 {
+  top: 1.5vh;
+  height: min(12vh, 11vw);
+  opacity: 0.13;
+  animation-duration: 95s;
+  animation-delay: -50s;
+}
+.jw-floral { position: absolute; width: min(20vw, 26vh); opacity: 0.5; }
 .jw-floral.left { left: 0; bottom: 0; }
 .jw-floral.right { right: 0; bottom: 0; }
+
+@keyframes jwSwayL {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(-1.4deg); }
+  50% { transform: translate3d(10px, -10px, 0) rotate(1.6deg); }
+}
+@keyframes jwSwayR {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(1.4deg); }
+  50% { transform: translate3d(-10px, -10px, 0) rotate(-1.5deg); }
+}
+@keyframes jwBreathe {
+  0%, 100% { transform: translate3d(-50%, 0, 0) scale(1); opacity: 0.24; }
+  50% { transform: translate3d(-50%, -8px, 0) scale(1.05); opacity: 0.34; }
+}
+@keyframes jwDrift {
+  0% { transform: translate3d(-30%, 0, 0); }
+  100% { transform: translate3d(110vw, 0, 0); }
+}
 
 .brand.glass, .counter.glass, .empty-frame.glass, .qr, .dl, #status, #hint, .ctl {
   background: rgba(248, 238, 230, 0.9) !important;
@@ -194,7 +255,7 @@ html, body {
 .slide.is-new .card { animation: jwGlow 2.4s 1s ease-in-out 3; }
 @keyframes jwGlow {
   0%, 100% { box-shadow: 0 3vh 6vh -3vh rgba(80, 40, 30, 0.45); }
-  50% { box-shadow: 0 3vh 6vh -3vh rgba(80, 40, 30, 0.45), 0 0 0 1vh rgba(196, 162, 122, 0.45); }
+  50% { box-shadow: 0 3vh 6vh -3vh rgba(80, 40, 30, 0.45), 0 0 0 1vh rgba(139, 79, 74, 0.28); }
 }
 
 .empty-frame { text-align: center; padding: 4vh 3vw; max-width: 46vw; }
@@ -267,16 +328,20 @@ html, body {
   color: var(--jw-brown) !important;
   border-radius: 999px !important;
 }
-#status i { background: #C4A27A; }
+#status i { background: #A56A64; }
 #status.live i { background: #7A9A6A; }
 
 @media (orientation: portrait) {
-  .jw-wayang { height: 28vh; opacity: 0.12; }
+  .jw-wayang { height: 26vh; opacity: 0.26; }
+  .jw-gunungan { height: 12vh; }
+  .jw-cloud { height: 10vh; }
   .jw-floral { width: 28vw; }
   .names .n, .names .amp { display: inline; }
   .names .amp { margin: 0 0.25em; }
   .brand .mono { margin-bottom: 0.8vh; font-size: 1.2vh; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .bg-layer, .slide, #bg .blob { animation: none !important; transition: none !important; }
+  .bg-layer, .slide, #bg .blob,
+  .jw-wayang, .jw-gunungan, .jw-cloud { animation: none !important; transition: none !important; }
+  .jw-gunungan { transform: translate3d(-50%, 0, 0); }
 }
